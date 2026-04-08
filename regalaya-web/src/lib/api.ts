@@ -7,7 +7,7 @@ import Cookies from 'js-cookie'
 /**
  * Base API configuration
  */
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api"
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"
 
 /**
  * Timeout para requisições (em ms)
@@ -56,7 +56,7 @@ function getLanguage(): string {
  */
 export function getDefaultHeaders(): HeadersInit {
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json; charset=UTF-8',
     'Accept-Language': getLanguage(),
   }
 
@@ -288,7 +288,12 @@ export async function apiFetch<T>(
       return {} as T
     }
 
-    return response.json()
+    const contentType = response.headers.get('content-type') || ''
+    if (contentType.includes('application/json')) {
+      return response.json()
+    }
+
+    return response.text() as Promise<T>
   } catch (error) {
     // Handle timeout
     if (error instanceof Error && error.name === 'AbortError') {

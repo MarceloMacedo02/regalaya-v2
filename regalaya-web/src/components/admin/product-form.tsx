@@ -21,10 +21,11 @@ import {
   Loader2,
 } from "lucide-react"
 import { categories } from "@/lib/mock-data"
-import { Product } from "@/lib/mock-data"
 import { ImageUploadManager } from "@/components/admin/image-upload-manager"
 import { AIDescriptionGenerator } from "@/components/admin/ai-description-generator"
 import { toast } from "@/components/ui/use-toast"
+import { productsService } from "@/services/products.service"
+import type { Product } from "@/types/product"
 import Link from "next/link"
 
 interface ProductFormProps {
@@ -32,10 +33,25 @@ interface ProductFormProps {
   mode: "create" | "edit"
 }
 
+interface ProductFormData {
+  name: string
+  description: string
+  shortDescription: string
+  price: number
+  compareAtPrice?: number
+  categoryId: string
+  category: string
+  images: string[]
+  tags: string[]
+  stock: number
+  sku: string
+  isActive: boolean
+}
+
 export function ProductForm({ product, mode }: ProductFormProps) {
   const router = useRouter()
   const [isSaving, setIsSaving] = useState(false)
-  const [formData, setFormData] = useState<Partial<Product>>({
+  const [formData, setFormData] = useState<ProductFormData>({
     name: "",
     description: "",
     shortDescription: "",
@@ -53,7 +69,20 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
   useEffect(() => {
     if (product) {
-      setFormData({ ...product })
+      setFormData({
+        name: product.name || "",
+        description: product.description || "",
+        shortDescription: product.shortDescription || "",
+        price: product.price || 0,
+        compareAtPrice: product.compareAtPrice,
+        categoryId: product.categoryId || "",
+        category: typeof product.category === "string" ? product.category : product.category?.name || "",
+        images: product.images || [],
+        tags: product.tags || [],
+        stock: product.stock || 0,
+        sku: product.sku || "",
+        isActive: product.isActive ?? true,
+      })
     }
   }, [product])
 
@@ -102,19 +131,58 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
     setIsSaving(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      if (mode === "create") {
+        await productsService.create({
+          name: formData.name!,
+          slug: formData.name!.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+          description: formData.description || "",
+          shortDescription: formData.shortDescription,
+          price: formData.price!,
+          compareAtPrice: formData.compareAtPrice,
+          sku: formData.sku,
+          stock: formData.stock!,
+          categoryId: formData.categoryId!,
+          images: formData.images || [],
+          tags: formData.tags,
+          isActive: formData.isActive,
+        })
+        toast({
+          title: "Produto criado!",
+          description: `${formData.name} foi criado com sucesso.`,
+        })
+      } else {
+        await productsService.update(product!.id, {
+          name: formData.name!,
+          slug: formData.name!.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""),
+          description: formData.description || "",
+          shortDescription: formData.shortDescription,
+          price: formData.price!,
+          compareAtPrice: formData.compareAtPrice,
+          sku: formData.sku,
+          stock: formData.stock!,
+          categoryId: formData.categoryId!,
+          images: formData.images || [],
+          tags: formData.tags,
+          isActive: formData.isActive,
+        })
+        toast({
+          title: "Produto atualizado!",
+          description: `${formData.name} foi atualizado com sucesso.`,
+        })
+      }
 
-    // In production, this would save to the database
-    console.log("Saving product:", formData)
-
-    toast({
-      title: mode === "create" ? "Produto criado!" : "Produto atualizado!",
-      description: `${formData.name} foi ${mode === "create" ? "criado" : "atualizado"} com sucesso.`,
-    })
-
-    setIsSaving(false)
-    router.push("/admin/products")
+      router.push("/admin/products")
+    } catch (error) {
+      console.error("Erro ao salvar produto:", error)
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao salvar o produto. Tente novamente.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleImagesChange = (images: string[]) => {
@@ -358,7 +426,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                       setFormData({
                         ...formData,
                         categoryId: value,
-                        category: category?.name,
+                        category: category?.name || "",
                       })
                     }}
                   >

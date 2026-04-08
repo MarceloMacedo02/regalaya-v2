@@ -47,6 +47,8 @@ import { formatPrice, formatDate, formatDateTime } from "@/lib/utils"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 
+
+
 const STATUS_BADGE_VARIANT: Record<string, string> = {
   PENDING: "warning",
   PROCESSING: "secondary",
@@ -91,7 +93,7 @@ export default function OrderDetailPage() {
         const data = await ordersService.getById(orderId)
         setOrder(data)
       } catch (error) {
-        console.error("Failed to fetch order:", error)
+        console.error("Erro ao buscar pedido:", error)
         toast({
           title: "Erro",
           description: "Não foi possível carregar os dados do pedido.",

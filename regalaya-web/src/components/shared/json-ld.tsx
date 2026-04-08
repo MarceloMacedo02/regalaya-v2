@@ -149,7 +149,7 @@ export function ProductWithReviewsJsonLd({
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.description,
+    description: product.description || product.shortDescription || product.name,
     image: product.images,
     brand: {
       "@type": "Brand",

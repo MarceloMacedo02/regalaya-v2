@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.regalaya.admin.dto.responses.CustomerAdminStatsResponse;
 import br.com.regalaya.admin.dto.responses.CustomerListResponse;
 import br.com.regalaya.admin.services.CustomerAdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,10 +73,16 @@ public class CustomerAdminController {
             @RequestParam(required = false) String status,
 
             @Parameter(description = "Registration date from (ISO-8601 format: yyyy-MM-dd'T'HH:mm:ss)")
-            @RequestParam(required = false) String registrationDateFrom,
+            @RequestParam(required = false) String dateFrom,
 
             @Parameter(description = "Registration date to (ISO-8601 format: yyyy-MM-dd'T'HH:mm:ss)")
-            @RequestParam(required = false) String registrationDateTo,
+            @RequestParam(required = false) String dateTo,
+
+            @Parameter(description = "Minimum number of orders")
+            @RequestParam(required = false) Integer minOrders,
+
+            @Parameter(description = "Maximum number of orders")
+            @RequestParam(required = false) Integer maxOrders,
 
             @Parameter(description = "Search term for name, email or phone (case-insensitive fuzzy match)")
             @RequestParam(required = false) String search,
@@ -83,6 +90,12 @@ public class CustomerAdminController {
             @Parameter(description = "Pagination parameters. Default: size=50, sort=name,asc")
             @PageableDefault(size = 50, sort = "name") Pageable pageable) {
 
-        return ResponseEntity.ok(customerAdminService.findAll(status, registrationDateFrom, registrationDateTo, search, pageable));
+        return ResponseEntity.ok(customerAdminService.findAll(status, dateFrom, dateTo, minOrders, maxOrders, search, pageable));
+    }
+
+    @GetMapping("/stats")
+    @Operation(summary = "Get customer dashboard stats")
+    public ResponseEntity<CustomerAdminStatsResponse> getStats() {
+        return ResponseEntity.ok(customerAdminService.getStats());
     }
 }

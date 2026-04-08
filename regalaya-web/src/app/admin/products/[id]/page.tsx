@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 import { ProductForm } from "@/components/admin/product-form"
-import { products } from "@/lib/mock-data"
+import { productsService } from "@/services/products.service"
 import { notFound } from "next/navigation"
 
 interface EditProductPageProps {
@@ -9,21 +9,28 @@ interface EditProductPageProps {
 
 export async function generateMetadata({ params }: EditProductPageProps): Promise<Metadata> {
   const { id } = await params
-  const product = products.find((p) => p.id === id)
-
-  return {
-    title: product ? `Editar: ${product.name} | Regalaya Admin` : "Editar Produto | Regalaya Admin",
-    description: "Editar informações do produto",
+  
+  try {
+    const product = await productsService.findById(id)
+    return {
+      title: `Editar: ${product.name} | Regalaya Admin`,
+      description: "Editar informações do produto",
+    }
+  } catch {
+    return {
+      title: "Editar Produto | Regalaya Admin",
+      description: "Editar informações do produto",
+    }
   }
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const { id } = await params
-  const product = products.find((p) => p.id === id)
-
-  if (!product) {
+  
+  try {
+    const product = await productsService.findById(id)
+    return <ProductForm product={product} mode="edit" />
+  } catch (error) {
     notFound()
   }
-
-  return <ProductForm product={product} mode="edit" />
 }

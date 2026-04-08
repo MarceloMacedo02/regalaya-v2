@@ -43,7 +43,7 @@ function CheckoutSuccessContent({ searchParams }: CheckoutSuccessContentProps) {
         const orderData = await ordersService.getMyOrderById(orderId)
         setOrder(orderData)
       } catch (err) {
-        console.error("Failed to fetch order:", err)
+        console.warn("Falha ao buscar pedido")
         setError("Não foi possível carregar os dados do pedido")
       } finally {
         setIsLoading(false)

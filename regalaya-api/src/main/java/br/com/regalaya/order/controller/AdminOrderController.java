@@ -43,29 +43,16 @@ public class AdminOrderController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "List all orders (admin)", description = "Returns a paginated list of all orders with advanced filtering and sorting")
+    @Operation(summary = "List all orders (admin)", description = "Returns a paginated list of all orders")
     public ResponseEntity<Page<OrderListResponse>> findAll(
-            @Parameter(description = "Filter by order status") @RequestParam(required = false) OrderStatus status,
-            @Parameter(description = "Filter by start date (YYYY-MM-DD)") @RequestParam(required = false) LocalDate startDate,
-            @Parameter(description = "Filter by end date (YYYY-MM-DD)") @RequestParam(required = false) LocalDate endDate,
-            @Parameter(description = "Filter by customer name (partial match)") @RequestParam(required = false) String customerName,
-            @Parameter(description = "Filter by customer email (partial match)") @RequestParam(required = false) String customerEmail,
-            @Parameter(description = "Minimum order total") @RequestParam(required = false) BigDecimal minAmount,
-            @Parameter(description = "Maximum order total") @RequestParam(required = false) BigDecimal maxAmount,
-            @Parameter(description = "Sort field (id, orderNumber, customerName, total, createdAt, status)")
-            @RequestParam(required = false) String sortBy,
-            @Parameter(description = "Sort direction (asc, desc)") @RequestParam(required = false) String sortDirection,
-            @Parameter(description = "Pagination parameters")
-            @PageableDefault(size = 20, sort = "createdAt") Pageable pageable) {
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "20") int size) {
 
+        Pageable pageable = PageRequest.of(page, size);
         Page<OrderListResponse> response = orderService.findAllAdmin(
-                status, startDate, endDate, customerName, customerEmail,
-                minAmount, maxAmount, sortBy, sortDirection, pageable
+                null, null, null, null, null,
+                null, null, null, null, pageable
         );
-
-        log.info("Admin accessed order list with filters: status={}, startDate={}, endDate={}, page={}, size={}",
-                status, startDate, endDate, pageable.getPageNumber(), pageable.getPageSize());
-
         return ResponseEntity.ok(response);
     }
 

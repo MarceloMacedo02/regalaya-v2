@@ -1,6 +1,6 @@
 # Story 8.3: Comunicação em Massa
 
-Status: ready-for-dev
+Status: in-progress
 
 <!-- Nota: Validação é opcional. Execute validate-create-story para verificação de qualidade antes de dev-story. -->
 
@@ -96,6 +96,8 @@ Como admin, quero enviar comunicações para clientes, para engajar e informar.
 Modelo de desenvolvimento BMad para criação de histórias completas
 
 ### Debug Log References
+
+- 2026-04-08: fluxo real de campanhas criado com persistência de campanhas/entregas, rate limiting de WhatsApp e páginas admin consumindo API em vez de mock.
 
 ### Completion Notes List
 

@@ -182,7 +182,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Enhanced Product Description */}
           <ProductDescription
             name={product.name}
-            description={product.description}
+            description={product.description || product.shortDescription || ""}
             shortDescription={product.shortDescription}
             category={typeof product.category === 'string' ? product.category : (product.category as any)?.name || ""}
             tags={[]}

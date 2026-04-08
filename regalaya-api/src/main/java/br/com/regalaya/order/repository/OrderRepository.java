@@ -31,10 +31,10 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.orderItems WHERE o.id = :id AND o.user.id = :userId")
     Optional<Order> findByIdAndUserId(@Param("id") UUID id, @Param("userId") UUID userId);
 
-    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.orderItems ORDER BY o.createdAt DESC")
+    @Query("SELECT o FROM Order o ORDER BY o.createdAt DESC")
     Page<Order> findAllWithItemsOrderByCreatedAtDesc(Pageable pageable);
 
-    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.orderItems ORDER BY o.createdAt DESC")
+    @Query("SELECT o FROM Order o ORDER BY o.createdAt DESC")
     List<Order> findTop5WithItemsByOrderByCreatedAtDesc(Pageable pageable);
 
     Page<Order> findByStatus(OrderStatus status, Pageable pageable);

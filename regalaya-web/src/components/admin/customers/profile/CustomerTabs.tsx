@@ -1,8 +1,9 @@
 "use client"
 
-import { TabType } from "@/app/admin/customers/[id]/page"
 import { cn } from "@/lib/utils"
 import { User, ShoppingBag, TrendingUp } from "lucide-react"
+
+type TabType = "summary" | "orders" | "metrics"
 
 interface CustomerTabsProps {
   activeTab: TabType

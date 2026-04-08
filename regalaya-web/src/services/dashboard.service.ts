@@ -59,8 +59,8 @@ export const dashboardApi = {
     http.get<TopProduct[]>('/dashboard/top-products', { period, limit }),
 
   getRecentOrders: (limit = 5) =>
-    http.get<{ content: OrderSummary[] }>('/orders', { page: 0, size: limit, sort: 'createdAt,desc' }),
+    http.get<{ content: OrderSummary[] }>('/admin/orders', { page: 0, size: limit }),
 
   getCustomers: (page = 0, size = 5) =>
-    http.get<{ content: CustomerSummary[] }>('/auth/users', { page, size, role: 'CLIENT' }),
+    http.get<{ content: CustomerSummary[] }>('/admin/users', { page, size, role: 'CLIENT' }),
 }

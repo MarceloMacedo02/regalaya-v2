@@ -74,7 +74,7 @@ function ProductsPageContent() {
         setTotalElements(response.totalElements || 0)
         setTotalPages(response.totalPages || 0)
       } catch (error) {
-        console.error("Erro ao carregar produtos:", error)
+        console.warn("Falha ao carregar produtos")
         setProducts([])
         setTotalElements(0)
         setTotalPages(0)

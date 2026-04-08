@@ -1,6 +1,6 @@
 # Story 8.2: Histórico de Compras (Admin)
 
-Status: ready-for-dev
+Status: in-progress
 
 <!-- Nota: Validação é opcional. Execute validate-create-story para verificação de qualidade antes de dev-story. -->
 
@@ -81,6 +81,8 @@ Como admin, quero ver o histórico de compras de cada cliente, para entender o c
 Modelo de desenvolvimento BMad para criação de histórias completas
 
 ### Debug Log References
+
+- 2026-04-08: rotas de perfil/histórico ajustadas para `/v1/admin/customers` e frontend conectado aos endpoints reais de perfil, pedidos, analytics e exportação.
 
 ### Completion Notes List
 

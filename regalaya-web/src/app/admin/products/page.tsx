@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect, useCallback } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
-import { Search, Plus, Edit, Trash2, Package, Filter, Images, Eye, X, Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { productsService } from "@/services/products.service"
 import { formatPrice } from "@/lib/utils"
 import type { Product } from "@/types/product"
@@ -17,8 +17,10 @@ import type { Category } from "@/types/category"
 import { ImageUploadManager } from "@/components/admin/image-upload-manager"
 import { AIDescriptionGenerator } from "@/components/admin/ai-description-generator"
 import { useToast } from "@/hooks/use-toast"
+import { Edit, Eye, Filter, Images, Loader2, Package, Plus, Search, Trash2 } from "lucide-react"
 
 export default function ProductsPage() {
+  const router = useRouter()
   const { toast } = useToast()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -79,22 +81,7 @@ export default function ProductsPage() {
   }
 
   const handleEditProduct = (product: Product) => {
-    setEditingProduct(product)
-    setFormData({
-      name: product.name,
-      description: product.description,
-      shortDescription: product.shortDescription || "",
-      price: product.price,
-      compareAtPrice: product.compareAtPrice,
-      categoryId: product.categoryId,
-      images: product.images || [],
-      tags: (product as any).tags || [],
-      stock: product.stock,
-      sku: product.sku || "",
-      isActive: product.isActive,
-    })
-    setErrors({})
-    setIsDialogOpen(true)
+    router.push(`/admin/products/${product.id}`)
   }
 
   const handleDeleteProduct = (productId: string) => setProductToDelete(productId)

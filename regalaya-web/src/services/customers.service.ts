@@ -155,50 +155,44 @@ export const customersService = {
       if (maxOrders !== undefined) queryParams.maxOrders = maxOrders
     }
 
-    return http.get<PageResponse<AdminCustomer>>('/v1/admin/customers', queryParams)
+    return http.get<PageResponse<AdminCustomer>>('/admin/customers', queryParams)
   },
 
   /**
    * Busca estatísticas resumidas dos clientes
    */
   getStats: (): Promise<CustomerStats> =>
-    http.get<CustomerStats>('/v1/admin/customers/stats'),
+    http.get<CustomerStats>('/admin/customers/stats'),
 
   /**
    * Busca um cliente específico por ID
    */
   getById: (id: string): Promise<AdminCustomer> =>
-    http.get<AdminCustomer>(`/v1/admin/customers/${id}`),
+    http.get<AdminCustomer>(`/admin/customers/${id}`),
 
   /**
    * Atualiza o status de um cliente
    */
   updateStatus: (id: string, status: CustomerStatus): Promise<AdminCustomer> =>
-    http.patch<AdminCustomer>(`/v1/admin/customers/${id}/status`, { status }),
+    http.patch<AdminCustomer>(`/admin/customers/${id}/status`, { status }),
 
   /**
    * Busca perfil detalhado do cliente ( HU-08.2.1 )
    */
   getCustomerProfile: (customerId: string): Promise<CustomerProfile> =>
-    http.get<CustomerProfile>(`/api/v1/admin/customers/${customerId}`),
+    http.get<CustomerProfile>(`/admin/customers/${customerId}`),
 
   /**
    * Busca histórico de pedidos do cliente com filtros ( HU-08.2.2 )
    */
   getCustomerOrders: (customerId: string, filter?: OrderFilterRequest): Promise<PageResponse<CustomerOrderSummary>> =>
-    http.get<PageResponse<CustomerOrderSummary>>(`/api/v1/admin/customers/${customerId}/orders`, filter as Record<string, string | number | boolean | undefined>),
+    http.get<PageResponse<CustomerOrderSummary>>(`/admin/customers/${customerId}/orders`, filter as Record<string, string | number | boolean | undefined>),
 
   /**
    * Exporta histórico de pedidos do cliente para CSV ( HU-08.2.2 )
    */
   exportCustomerOrdersToCsv: (customerId: string, filter?: OrderFilterRequest): Promise<string> =>
-    http.get<Blob>('/api/v1/admin/customers/${customerId}/orders/export', {
-      ...filter,
-      responseType: 'blob'
-    } as Record<string, string | number | boolean | undefined>).then(response => {
-      // Converte blob para texto CSV
-      return (response as Blob).text()
-    }),
+    http.get<string>(`/admin/customers/${customerId}/orders/export`, filter as Record<string, string | number | boolean | undefined>),
 
   /**
    * Busca dados analíticos para gráficos ( HU-08.2.4 )
@@ -208,7 +202,7 @@ export const customersService = {
     startDate?: string,
     endDate?: string
   ): Promise<CustomerChartData> =>
-    http.get<CustomerChartData>(`/api/v1/admin/customers/${customerId}/analytics`, {
+    http.get<CustomerChartData>(`/admin/customers/${customerId}/analytics`, {
       startDate,
       endDate
     }),
@@ -217,5 +211,5 @@ export const customersService = {
    * Força recálculo de segmentação manualmente ( HU-08.2.3 )
    */
   recalculateCustomerSegmentation: (customerId: string): Promise<void> =>
-    http.post(`/api/v1/admin/customers/${customerId}/recalculate-segmentation`, {}),
+    http.post(`/admin/customers/${customerId}/recalculate-segmentation`, {}),
 }

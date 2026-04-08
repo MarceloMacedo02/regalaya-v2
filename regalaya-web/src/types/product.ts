@@ -4,19 +4,19 @@ export interface Product {
   id: string
   name: string
   slug: string
-  description: string
+  description?: string
   shortDescription?: string
   price: number
   compareAtPrice?: number
   images: string[]
   categoryId: string
   category?: import("./category").Category
-  tags: string[]
+  tags?: string[]
   sku?: string
   stock: number
   isActive: boolean
-  createdAt: string
-  updatedAt: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface ProductFilters {
@@ -43,38 +43,38 @@ export interface PaginatedResponse<T> {
 
 /**
  * DTO para criação de produto
+ * Alinhado com backend CreateProductRequest
  */
 export interface CreateProductRequest {
   name: string
-  description: string
-  price: number
-  stockQuantity: number
-  categoryId: string
-  imageUrl?: string
-  ecommerceId?: string
+  slug: string
+  description?: string
   shortDescription?: string
+  price: number
   compareAtPrice?: number
+  sku?: string
+  stock: number
+  categoryId: string
   images?: string[]
   tags?: string[]
-  sku?: string
   isActive?: boolean
 }
 
 /**
  * DTO para atualização de produto
+ * Alinhado com backend CreateProductRequest
  */
 export interface UpdateProductRequest {
   name?: string
+  slug?: string
   description?: string
-  price?: number
-  stockQuantity?: number
-  categoryId?: string
-  imageUrl?: string
-  ecommerceId?: string
   shortDescription?: string
+  price?: number
   compareAtPrice?: number
+  sku?: string
+  stock?: number
+  categoryId?: string
   images?: string[]
   tags?: string[]
-  sku?: string
   isActive?: boolean
 }

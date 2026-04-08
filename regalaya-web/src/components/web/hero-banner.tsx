@@ -19,7 +19,7 @@ export function HeroBanner({
   badge = 'Novidades',
   ctaText = 'Enviar Presente',
   ctaHref = '/products',
-  imageUrl = 'https://images.unsplash.com/photo-1549465220-1a8b9238cd53?w=800&h=600&fit=crop',
+  imageUrl = 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800&h=600&fit=crop',
 }: HeroBannerProps) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-[#f6f3f2]">

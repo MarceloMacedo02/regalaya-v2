@@ -91,12 +91,12 @@ development_status:
 
   # ÉPICO 08: Gestão de Clientes (Admin)
   epic-8: in-progress
-  08-1-listagem-clientes-admin: ready-for-dev
+  08-1-listagem-clientes-admin: in-progress
   08-2.1-perfil-cliente: review
   08-2.2-historico-pedidos-admin: review
   08-2.3-metricas-segmentacao: review
   08-2.4-graficos-visualizacao: review
-  08-3-comunicacao-massa: ready-for-dev
+  08-3-comunicacao-massa: in-progress
   epic-8-retrospective: optional
 
   # ÉPICO 09: Notificações e Lembretes

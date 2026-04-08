@@ -1,8 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { format } from "date-fns"
+import { Calendar } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -10,9 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Calendar } from "lucide-react"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
 
 interface PeriodFilterProps {
   onPeriodChange: (period: string) => void
@@ -20,10 +20,7 @@ interface PeriodFilterProps {
 }
 
 export function PeriodFilter({ onPeriodChange, currentPeriod }: PeriodFilterProps) {
-  const [customRange, setCustomRange] = useState<{
-    start: string
-    end: string
-  }>({
+  const [customRange, setCustomRange] = useState({
     start: format(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
     end: format(new Date(), "yyyy-MM-dd"),
   })
@@ -48,6 +45,9 @@ export function PeriodFilter({ onPeriodChange, currentPeriod }: PeriodFilterProp
       case "year":
         startDate = new Date(today.getFullYear(), 0, 1)
         break
+      case "custom":
+        onPeriodChange("custom")
+        return
       default:
         startDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
     }
@@ -63,35 +63,37 @@ export function PeriodFilter({ onPeriodChange, currentPeriod }: PeriodFilterProp
     onPeriodChange(`custom:${customRange.start}:${customRange.end}`)
   }
 
+  const selectValue = currentPeriod.startsWith("custom:") ? "custom" : currentPeriod
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Calendar className="h-4 w-4" />
-          Período
+          Periodo
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Select value={currentPeriod} onValueChange={handlePresetChange}>
+        <Select value={selectValue} onValueChange={handlePresetChange}>
           <SelectTrigger>
-            <SelectValue placeholder="Selecione o período" />
+            <SelectValue placeholder="Selecione o periodo" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="today">Hoje</SelectItem>
-            <SelectItem value="week">Últimos 7 dias</SelectItem>
-            <SelectItem value="month">Últimos 30 dias</SelectItem>
-            <SelectItem value="quarter">Últimos 90 dias</SelectItem>
+            <SelectItem value="week">Ultimos 7 dias</SelectItem>
+            <SelectItem value="month">Ultimos 30 dias</SelectItem>
+            <SelectItem value="quarter">Ultimos 90 dias</SelectItem>
             <SelectItem value="year">Este ano</SelectItem>
             <SelectItem value="custom">Personalizado</SelectItem>
           </SelectContent>
         </Select>
 
-        {currentPeriod === "custom" && (
+        {selectValue === "custom" && (
           <div className="space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Data Início
+                  Data inicio
                 </label>
                 <input
                   type="date"
@@ -104,7 +106,7 @@ export function PeriodFilter({ onPeriodChange, currentPeriod }: PeriodFilterProp
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Data Fim
+                  Data fim
                 </label>
                 <input
                   type="date"
@@ -123,13 +125,13 @@ export function PeriodFilter({ onPeriodChange, currentPeriod }: PeriodFilterProp
         )}
 
         <div className="text-xs text-muted-foreground">
-          {currentPeriod !== "custom" && (
+          {selectValue !== "custom" && (
             <p>
-              {currentPeriod === "today" && "Dados de hoje"}
-              {currentPeriod === "week" && "Últimos 7 dias"}
-              {currentPeriod === "month" && "Últimos 30 dias"}
-              {currentPeriod === "quarter" && "Últimos 90 dias"}
-              {currentPeriod === "year" && "Este ano calendário"}
+              {selectValue === "today" && "Dados de hoje"}
+              {selectValue === "week" && "Ultimos 7 dias"}
+              {selectValue === "month" && "Ultimos 30 dias"}
+              {selectValue === "quarter" && "Ultimos 90 dias"}
+              {selectValue === "year" && "Este ano calendario"}
             </p>
           )}
         </div>

@@ -8,6 +8,7 @@ import { Download, Eye, ShoppingCart, DollarSign, Clock, User, ChevronLeft, Chev
 import { formatPrice, formatDate } from "@/lib/utils"
 import { ordersService, OrderResponse } from "@/services/orders.service"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 
 const STATUS_MAP: Record<string, string> = {
@@ -52,12 +53,12 @@ export default function OrdersPage() {
   const fetchOrders = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await ordersService.getAll(page, pageSize, "createdAt,desc")
-      setOrders(response.content)
-      setTotalPages(response.totalPages)
-      setTotalElements(response.totalElements)
+      const response = await ordersService.getAll(page, pageSize)
+      setOrders(response.content || [])
+      setTotalPages(response.totalPages || 0)
+      setTotalElements(response.totalElements || 0)
     } catch (error) {
-      console.error("Failed to fetch orders:", error)
+      console.error("Erro ao buscar pedidos:", error)
     } finally {
       setLoading(false)
     }

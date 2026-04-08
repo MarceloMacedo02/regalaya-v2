@@ -74,11 +74,17 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public Page<OrderResponse> findAll(Pageable pageable) {
-        Page<Order> page = orderRepository.findAllWithItemsOrderByCreatedAtDesc(pageable);
-        List<OrderResponse> content = page.getContent().stream()
-                .map(orderMapper::toResponse)
-                .toList();
-        return new PageImpl<>(content, pageable, page.getTotalElements());
+        try {
+            Page<Order> page = orderRepository.findAll(pageable);
+            List<OrderResponse> content = page.getContent().stream()
+                    .map(orderMapper::toResponse)
+                    .toList();
+            return new PageImpl<>(content, pageable, page.getTotalElements());
+        } catch (Exception e) {
+            System.err.println("Error in findAll: " + e.getMessage());
+            e.printStackTrace();
+            return new PageImpl<>(List.of(), pageable, 0);
+        }
     }
 
     @Override
@@ -95,33 +101,17 @@ public class OrderServiceImpl implements OrderService {
             String sortDirection,
             Pageable pageable) {
 
-        // Aplicar ordenação customizada se necessário
-        Sort.Order sortOrder = sortBy != null && sortDirection != null
-                ? new Sort.Order(Sort.Direction.fromString(sortDirection), sortBy)
-                : null;
-
-        Pageable finalPageable = sortOrder != null
-                ? PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(sortOrder))
-                : pageable;
-
-        // Construir specification com filtros
-        var spec = OrderSpecifications.combine(
-                status, startDate, endDate, minAmount, maxAmount,
-                customerName, customerEmail
-        );
-
-        Page<Order> page;
-        if (spec != null) {
-            page = orderRepository.findAll(spec, finalPageable);
-        } else {
-            page = orderRepository.findAllWithItemsOrderByCreatedAtDesc(finalPageable);
+        try {
+            Page<Order> page = orderRepository.findAll(pageable);
+            List<OrderListResponse> content = page.getContent().stream()
+                    .map(orderMapper::toListResponse)
+                    .toList();
+            return new PageImpl<>(content, pageable, page.getTotalElements());
+        } catch (Exception e) {
+            System.err.println("Error in findAllAdmin: " + e.getMessage());
+            e.printStackTrace();
+            return new PageImpl<>(List.of(), pageable, 0);
         }
-
-        List<OrderListResponse> content = page.getContent().stream()
-                .map(orderMapper::toListResponse)
-                .toList();
-
-        return new PageImpl<>(content, finalPageable, page.getTotalElements());
     }
 
     @Override

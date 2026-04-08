@@ -54,16 +54,16 @@ export default function AdminDashboardPage() {
         if (cancelled) return
 
         if (statsRes.status === "fulfilled") setStats(statsRes.value)
-        else if (statsRes.status === "rejected") console.error("Failed to fetch stats:", statsRes.reason)
+        else if (statsRes.status === "rejected") console.warn("Falha ao buscar estatísticas")
 
         if (salesRes.status === "fulfilled") setSalesData(salesRes.value)
-        else if (salesRes.status === "rejected") console.error("Failed to fetch sales:", salesRes.reason)
+        else if (salesRes.status === "rejected") console.warn("Falha ao buscar vendas")
 
         if (topRes.status === "fulfilled") setTopProducts(topRes.value)
-        else if (topRes.status === "rejected") console.error("Failed to fetch top products:", topRes.reason)
+        else if (topRes.status === "rejected") console.warn("Falha ao buscar produtos")
 
-        if (ordersRes.status === "fulfilled") setRecentOrders(ordersRes.value.content || [])
-        else if (ordersRes.status === "rejected") console.error("Failed to fetch orders:", ordersRes.reason)
+        if (ordersRes.status === "fulfilled") setRecentOrders(ordersRes.value?.content || [])
+        else if (ordersRes.status === "rejected") console.warn("Falha ao buscar pedidos")
 
         setLoading(false)
       } catch (err) {
@@ -228,7 +228,7 @@ export default function AdminDashboardPage() {
               <span className="text-slate-400 text-xs">Últimos 30 dias</span>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             <SalesChart data={salesData} />
           </CardContent>
         </Card>
@@ -240,7 +240,7 @@ export default function AdminDashboardPage() {
               <span className="text-slate-400 text-xs">Mais vendidos</span>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             <TopProducts products={topProducts} />
           </CardContent>
         </Card>
@@ -263,7 +263,7 @@ export default function AdminDashboardPage() {
               <div className="space-y-2">
                 {recentOrders.map((order) => (
                   <div
-                    key={order.id}
+                    key={order.id || order.orderNumber}
                     className="flex items-center justify-between p-3 rounded border border-slate-200 hover:bg-slate-50 transition-colors"
                   >
                     <div className="min-w-0 flex-1">
@@ -297,7 +297,7 @@ export default function AdminDashboardPage() {
               <div className="space-y-2">
                 {recentCustomers.map((customer) => (
                   <div
-                    key={customer.id}
+                    key={customer.id || customer.email}
                     className="flex items-center justify-between p-3 rounded border border-slate-200 hover:bg-slate-50 transition-colors"
                   >
                     <div className="min-w-0 flex-1">

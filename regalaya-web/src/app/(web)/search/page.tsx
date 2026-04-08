@@ -34,7 +34,7 @@ function SearchContent() {
 
     const filtered = products.filter((product) => {
       const nameMatch = product.name.toLowerCase().includes(normalizedQuery)
-      const descMatch = product.description.toLowerCase().includes(normalizedQuery)
+      const descMatch = (product.description || "").toLowerCase().includes(normalizedQuery)
       const categoryMatch = product.category.toLowerCase().includes(normalizedQuery)
       const tagsMatch = product.tags.some((tag) =>
         tag.toLowerCase().includes(normalizedQuery)

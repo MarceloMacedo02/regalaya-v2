@@ -41,14 +41,14 @@ public class OrderSpecifications {
     public static Specification<Order> customerNameContains(String customerName) {
         return (root, query, cb) -> {
             if (customerName == null || customerName.isBlank()) return null;
-            return cb.like(cb.lower(root.get("customerName")), "%" + customerName.toLowerCase() + "%");
+            return cb.like(cb.lower(root.get("customerName")), cb.literal("%" + customerName.toLowerCase() + "%"));
         };
     }
 
     public static Specification<Order> customerEmailContains(String customerEmail) {
         return (root, query, cb) -> {
             if (customerEmail == null || customerEmail.isBlank()) return null;
-            return cb.like(cb.lower(root.get("customerEmail")), "%" + customerEmail.toLowerCase() + "%");
+            return cb.like(cb.lower(root.get("customerEmail")), cb.literal("%" + customerEmail.toLowerCase() + "%"));
         };
     }
 

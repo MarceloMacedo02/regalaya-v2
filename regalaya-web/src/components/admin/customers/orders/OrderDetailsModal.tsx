@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Package, MapPin, CreditCard, User, Clock, ChevronRight } from "lucide-react"
 import { formatPrice, formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"

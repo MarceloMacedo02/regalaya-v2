@@ -58,6 +58,34 @@ public final class CustomerSpecifications {
                 dateTo == null ? null : cb.lessThanOrEqualTo(root.get("createdAt"), dateTo);
     }
 
+    public static Specification<User> hasMinOrders(Integer minOrders) {
+        return (root, query, cb) -> {
+            if (minOrders == null) {
+                return null;
+            }
+
+            var subquery = query.subquery(Long.class);
+            var orderRoot = subquery.from(br.com.regalaya.order.domain.model.Order.class);
+            subquery.select(cb.count(orderRoot));
+            subquery.where(cb.equal(orderRoot.get("user").get("id"), root.get("id")));
+            return cb.greaterThanOrEqualTo(subquery, minOrders.longValue());
+        };
+    }
+
+    public static Specification<User> hasMaxOrders(Integer maxOrders) {
+        return (root, query, cb) -> {
+            if (maxOrders == null) {
+                return null;
+            }
+
+            var subquery = query.subquery(Long.class);
+            var orderRoot = subquery.from(br.com.regalaya.order.domain.model.Order.class);
+            subquery.select(cb.count(orderRoot));
+            subquery.where(cb.equal(orderRoot.get("user").get("id"), root.get("id")));
+            return cb.lessThanOrEqualTo(subquery, maxOrders.longValue());
+        };
+    }
+
     /**
      * Filtra clientes por busca textual em nome, email ou telefone.
      * <p>

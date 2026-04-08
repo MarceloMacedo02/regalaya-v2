@@ -156,7 +156,7 @@ export default function CheckoutPage() {
         setSelectedShippingOption(freeOption || cheapest)
 
       } catch (error) {
-        console.error("Shipping calculation error:", error)
+        console.warn("Erro no cálculo de frete - usando valor padrão")
         toast({
           title: "Erro no cálculo de frete",
           description: "Usando valor estimado de R$ 29,90",
@@ -330,7 +330,7 @@ export default function CheckoutPage() {
       })
 
     } catch (error: unknown) {
-      console.error("PIX payment error:", error)
+      console.warn("Erro no pagamento PIX")
       const message = error instanceof Error ? error.message : "Erro ao gerar PIX"
       toast({ title: "Erro no PIX", description: message, variant: "destructive" })
     } finally {
@@ -411,7 +411,7 @@ export default function CheckoutPage() {
       router.push(`/checkout/success?order=${orderId}&method=card`)
 
     } catch (error: unknown) {
-      console.error("Card payment error:", error)
+      console.warn("Erro no pagamento com cartão")
       const message = error instanceof Error ? error.message : "Erro ao processar pagamento"
       toast({ title: "Pagamento recusado", description: message, variant: "destructive" })
     } finally {

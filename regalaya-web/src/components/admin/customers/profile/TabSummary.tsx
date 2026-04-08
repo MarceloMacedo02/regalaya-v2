@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react"
 import { customersService, type CustomerMetrics } from "@/services"
 import MetricCards from "@/components/admin/customers/metrics/MetricCards"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { TrendingUp, Target, Calendar, RefreshCw } from "lucide-react"
-import { formatPrice, formatDate } from "@/lib/utils"
+import { RefreshCw, ShoppingBag, Target, TrendingUp } from "lucide-react"
+import { cn, formatPrice, formatDate } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
 interface TabSummaryProps {

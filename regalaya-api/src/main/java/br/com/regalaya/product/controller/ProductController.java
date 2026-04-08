@@ -1,6 +1,7 @@
 package br.com.regalaya.product.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -9,10 +10,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.regalaya.product.dto.requests.CreateProductRequest;
 import br.com.regalaya.product.dto.responses.ProductResponse;
 import br.com.regalaya.product.services.ProductService;
+import br.com.regalaya.shared.service.StorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,9 +27,11 @@ import jakarta.validation.Valid;
 public class ProductController {
 
     private final ProductService productService;
+    private final StorageService storageService;
 
-    public ProductController(ProductService productService) {
+    public ProductController(ProductService productService, StorageService storageService) {
         this.productService = productService;
+        this.storageService = storageService;
     }
 
     @GetMapping
@@ -88,5 +93,51 @@ public class ProductController {
     public ResponseEntity<List<ProductResponse>> getSuggestions(
             @RequestParam String q) {
         return ResponseEntity.ok(productService.getSuggestions(q));
+    }
+
+    @PostMapping("/upload-image")
+    @Operation(summary = "Upload product image to S3")
+    public ResponseEntity<Map<String, String>> uploadImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "productId", required = false) String productId) {
+        
+        String folder = "products";
+        if (productId != null && !productId.isEmpty()) {
+            folder = "products/" + productId;
+        }
+        
+        Map<String, String> result = storageService.uploadFile(file, folder, null);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/with-image")
+    @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Create new product with image upload")
+    public ResponseEntity<ProductResponse> createWithImage(
+            @RequestParam("name") String name,
+            @RequestParam("slug") String slug,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "shortDescription", required = false) String shortDescription,
+            @RequestParam("price") java.math.BigDecimal price,
+            @RequestParam(value = "compareAtPrice", required = false) java.math.BigDecimal compareAtPrice,
+            @RequestParam(value = "sku", required = false) String sku,
+            @RequestParam("stock") Integer stock,
+            @RequestParam("categoryId") java.util.UUID categoryId,
+            @RequestParam(value = "isActive", required = false) Boolean isActive,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        
+        // Upload image if provided
+        List<String> images = new java.util.ArrayList<>();
+        if (image != null && !image.isEmpty()) {
+            Map<String, String> uploadResult = storageService.uploadFile(image, "products", null);
+            images.add(uploadResult.get("url"));
+        }
+        
+        CreateProductRequest request = new CreateProductRequest(
+            name, slug, description, shortDescription,
+            price, compareAtPrice, sku, stock, categoryId, images, isActive
+        );
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.create(request));
     }
 }

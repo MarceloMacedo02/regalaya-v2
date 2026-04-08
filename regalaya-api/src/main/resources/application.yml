@@ -51,6 +51,13 @@ spring:
     virtual:
       enabled: true
 
+  # Multipart Configuration
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 # Server
 server:
   port: 8080
@@ -133,7 +140,7 @@ cloud:
     endpoint:
       uri: ${AWS_ENDPOINT_URL:http://localhost:4566}
     s3:
-      bucket: ${AWS_S3_BUCKET:regalaya-uploads}
+      bucket: ${AWS_S3_BUCKET:regalaya-images}
       path-style-access: true
 
 # Resilience4j Configuration

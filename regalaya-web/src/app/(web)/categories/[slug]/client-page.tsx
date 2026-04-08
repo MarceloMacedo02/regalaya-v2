@@ -28,7 +28,7 @@ export function ClientCategoryPage({ category, initialProducts, allCategories }:
     return initialProducts.filter((product) => {
       if (filters.search &&
           !product.name.toLowerCase().includes(filters.search.toLowerCase()) &&
-          !product.description.toLowerCase().includes(filters.search.toLowerCase())) {
+          !(product.description?.toLowerCase().includes(filters.search.toLowerCase()) ?? false)) {
         return false
       }
       if (filters.minPrice !== null && product.price < filters.minPrice) return false
@@ -36,7 +36,7 @@ export function ClientCategoryPage({ category, initialProducts, allCategories }:
 
       if (filters.tags.length > 0) {
         const hasMatchingTag = filters.tags.some(tag =>
-          product.tags.some(productTag =>
+          (product.tags || []).some(productTag =>
             productTag.toLowerCase().includes(tag.toLowerCase())
           )
         )

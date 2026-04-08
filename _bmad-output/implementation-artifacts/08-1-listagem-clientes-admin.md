@@ -1,6 +1,6 @@
 # Story 8.1: Listagem de Clientes (Admin)
 
-Status: ready-for-dev
+Status: in-progress
 
 <!-- Nota: Validação é opcional. Execute validate-create-story para verificação de qualidade antes de dev-story. -->
 
@@ -80,6 +80,8 @@ Como admin, quero visualizar todos os clientes, para conhecer minha base.
 Modelo de desenvolvimento BMad para criação de histórias completas
 
 ### Debug Log References
+
+- 2026-04-08: endpoint de listagem/admin stats alinhado com filtros reais, normalização de status e integração do frontend em `regalaya-web`.
 
 ### Completion Notes List
 

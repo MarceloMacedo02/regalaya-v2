@@ -29,11 +29,13 @@ export interface OrderDetailResponse extends OrderResponse {
   shippingAddress: string
   notes: string
   trackingCode: string
+  trackingUrl?: string
   orderItems: OrderItemResponse[]
   subtotal: number
   shipping: number
   discount: number
   paymentMethod: string
+  transactionId?: string
 }
 
 export interface CreateOrderItemRequest {
@@ -69,10 +71,10 @@ export interface UpdateOrderStatusRequest {
 
 export const ordersService = {
   // Admin endpoints
-  getAll: (page = 0, size = 20, sort = 'createdAt,desc') =>
+  getAll: (page = 0, size = 20) =>
     http.get<{ content: OrderResponse[]; totalElements: number; totalPages: number; number: number; size: number }>(
       '/orders',
-      { page, size, sort }
+      { page, size }
     ),
 
   getById: (id: string) =>
@@ -80,6 +82,9 @@ export const ordersService = {
 
   updateStatus: (id: string, request: UpdateOrderStatusRequest) =>
     http.patch<OrderDetailResponse>(`/orders/${id}/status`, request),
+
+  processRefund: (id: string, request: { type: 'FULL' | 'PARTIAL'; amount?: number; reason: string }) =>
+    http.post<{ success: boolean; refundId: string; refundAmount: number; refundType: string; message: string }>(`/orders/${id}/refund`, request),
 
   getRecent: (limit = 5) =>
     http.get<OrderResponse[]>('/orders/recent', { limit }),

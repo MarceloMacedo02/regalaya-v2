@@ -3,6 +3,7 @@ package br.com.regalaya.admin.services;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import br.com.regalaya.admin.dto.responses.CustomerAdminStatsResponse;
 import br.com.regalaya.admin.dto.responses.CustomerListResponse;
 
 /**
@@ -31,6 +32,10 @@ public interface CustomerAdminService {
     Page<CustomerListResponse> findAll(String status,
                                        String registrationDateFrom,
                                        String registrationDateTo,
+                                       Integer minOrders,
+                                       Integer maxOrders,
                                        String search,
                                        Pageable pageable);
+
+    CustomerAdminStatsResponse getStats();
 }

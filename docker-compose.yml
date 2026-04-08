@@ -90,24 +90,20 @@ services:
   # UI Web: http://localhost:4566
   # ===================================================================
   localstack:
-    image: localstack/localstack-pro:latest
+    image: localstack/localstack-pro:4.2.0
     container_name: regalaya-localstack
     restart: unless-stopped
     environment:
-      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-}
-      - SERVICES=s3,sqs,sns,ses,lambda,dynamodb,cloudformation,sts,iam
-      - DEFAULT_REGION=us-east-1
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-ls-jacEHeO-KUCA-pico-PuGe-84940013540d}
+      - SERVICES=s3,sqs,sns,lambda,dynamodb,sts,iam
       - DEBUG=1
-      - LAMBDA_EXECUTOR=local
       - PERSISTENCE=1
-      - HOSTNAME_EXTERNAL=localstack
-      - EAGER_SERVICE_LOADING=1
     ports:
       - "4566:4566"
       - "4510-4559:4510-4559"
     volumes:
       - localstack_data:/var/lib/localstack
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./regalaya-api/localstack-init.sh:/etc/localstack/init/ready.d/init.sh
     networks:
       - regalaya-network
     healthcheck:

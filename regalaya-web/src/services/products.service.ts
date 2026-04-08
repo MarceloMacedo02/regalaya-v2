@@ -110,4 +110,33 @@ export const productsService = {
   async deleteCategory(id: string): Promise<void> {
     return http.delete(`/categories/${id}`)
   },
+
+  /**
+   * Upload de imagem para S3
+   */
+  async uploadImage(file: File, productId?: string): Promise<{ url: string; key: string }> {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (productId) {
+      formData.append('productId', productId)
+    }
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1'}/products/upload-image`,
+      {
+        method: 'POST',
+        body: formData,
+        headers: {
+          // Não setar Content-Type para FormData - o browser seta automaticamente com boundary
+        },
+        credentials: 'include',
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to upload image')
+    }
+
+    return response.json()
+  },
 }

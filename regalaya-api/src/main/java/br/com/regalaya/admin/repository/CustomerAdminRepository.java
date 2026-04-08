@@ -1,6 +1,7 @@
 package br.com.regalaya.admin.repository;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import br.com.regalaya.auth.domain.model.Role;
 import br.com.regalaya.auth.domain.model.User;
 
 /**
@@ -42,4 +44,12 @@ public interface CustomerAdminRepository extends JpaRepository<User, UUID>, JpaS
      */
     @Query("SELECT COALESCE(SUM(o.total), 0) FROM Order o WHERE o.user.id = :userId")
     BigDecimal sumTotalSpentByUserId(@Param("userId") UUID userId);
+
+    long countByRoleIn(Collection<Role> roles);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role IN (br.com.regalaya.auth.domain.model.Role.USER, br.com.regalaya.auth.domain.model.Role.CLIENT) AND UPPER(u.status) = 'ACTIVE'")
+    long countActiveCustomers();
+
+    @Query("SELECT COALESCE(SUM(o.total), 0) FROM Order o")
+    BigDecimal sumRevenue();
 }

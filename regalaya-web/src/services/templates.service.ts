@@ -1,6 +1,6 @@
-import { http } from '@/lib/api'
+import { http } from "@/lib/api"
 
-export type CommunicationType = 'EMAIL' | 'WHATSAPP'
+export type CommunicationType = "EMAIL" | "WHATSAPP"
 
 export interface Template {
   id: string
@@ -28,39 +28,41 @@ export interface TemplateRequest {
   category?: string
 }
 
+const BASE_PATH = "/admin/templates"
+
 export const templatesService = {
   async findAll(type?: CommunicationType, search?: string): Promise<Template[]> {
     const params: Record<string, string> = {}
     if (type) params.type = type
     if (search) params.search = search
-    return http.get<Template[]>('/v1/admin/templates', params)
+    return http.get<Template[]>(BASE_PATH, params)
   },
 
   async findById(id: string): Promise<Template> {
-    return http.get<Template>(`/v1/admin/templates/${id}`)
+    return http.get<Template>(`${BASE_PATH}/${id}`)
   },
 
   async create(data: TemplateRequest): Promise<Template> {
-    return http.post<Template>('/v1/admin/templates', data)
+    return http.post<Template>(BASE_PATH, data)
   },
 
   async update(id: string, data: TemplateRequest): Promise<Template> {
-    return http.put<Template>(`/v1/admin/templates/${id}`, data)
+    return http.put<Template>(`${BASE_PATH}/${id}`, data)
   },
 
   async delete(id: string): Promise<void> {
-    return http.delete(`/v1/admin/templates/${id}`)
+    return http.delete(`${BASE_PATH}/${id}`)
   },
 
   async getVersions(id: string): Promise<Template[]> {
-    return http.get<Template[]>(`/v1/admin/templates/${id}/versions`)
+    return http.get<Template[]>(`${BASE_PATH}/${id}/versions`)
   },
 
   async exportTemplates(): Promise<string> {
-    return http.get<string>('/v1/admin/templates/export')
+    return http.get<string>(`${BASE_PATH}/export`)
   },
 
   async importTemplates(jsonContent: string): Promise<Template[]> {
-    return http.post<Template[]>('/v1/admin/templates/import', { jsonContent })
+    return http.post<Template[]>(`${BASE_PATH}/import`, { jsonContent })
   },
 }

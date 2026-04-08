@@ -14,7 +14,7 @@ interface TopProductsProps {
 export function TopProducts({ products, limit = 5 }: TopProductsProps) {
   const displayProducts = products.slice(0, limit)
 
-  const maxRevenue = Math.max(...products.map((p) => p.revenue))
+  const maxRevenue = Math.max(1, ...displayProducts.map((p) => p.revenue || 0))
 
   return (
     <Card>
@@ -33,7 +33,7 @@ export function TopProducts({ products, limit = 5 }: TopProductsProps) {
             const percentage = (product.revenue / maxRevenue) * 100
 
             return (
-              <div key={product.productId} className="space-y-2">
+              <div key={product.productId || `${product.productName}-${index}`} className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-sm font-semibold">

@@ -11,13 +11,13 @@ type ProductCardProduct = {
   id: string
   name: string
   slug: string
-  description: string
+  description?: string
   shortDescription?: string
   price: number
   compareAtPrice?: number
   images: string[]
   category?: string | { name?: string }
-  tags: string[]
+  tags?: string[]
   sku?: string
   stock: number
   isActive: boolean
@@ -283,11 +283,11 @@ export function ProductCard({
           <p className="text-sm text-muted-foreground line-clamp-2">
             {highlightText ? (
               <HighlightText
-                text={product.shortDescription || product.description}
+                text={product.shortDescription || product.description || ""}
                 query={highlightText}
               />
             ) : (
-              product.shortDescription || product.description
+              product.shortDescription || product.description || ""
             )}
           </p>
         </CardContent>

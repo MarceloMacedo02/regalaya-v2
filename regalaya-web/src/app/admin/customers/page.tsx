@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { Download, Users, TrendingUp, DollarSign, ShoppingBag, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -11,18 +12,10 @@ import { CustomerFilters } from '@/components/admin/customers/CustomerFilters'
 import { CustomerTable } from '@/components/admin/customers/CustomerTable'
 import { ColumnConfigModal } from '@/components/admin/customers/ColumnConfigModal'
 import { CustomerSkeletonTable } from '@/components/admin/customers/CustomerSkeletonTable'
-import type { AdminCustomer, CustomerFilters as CustomerFiltersType } from '@/services/customers.service'
+import type { AdminCustomer } from '@/services/customers.service'
 
-/**
- * Página de Gestão de Clientes Admin.
- *
- * Funcionalidades:
- * - Stats cards com métricas resumidas (Story 8.1.1)
- * - Filtros avançados com busca, status, data e pedidos (Story 8.1.2)
- * - Tabela com colunas customizáveis (Story 8.1.3)
- * - Paginação com page size configurável (Story 8.1.4)
- */
 export default function AdminCustomersPage() {
+  const router = useRouter()
   const {
     data,
     stats,
@@ -44,9 +37,6 @@ export default function AdminCustomersPage() {
     visibleColumns,
   } = useColumnPreferences()
 
-  /**
-   * Handler para exportar clientes visíveis como CSV
-   */
   const handleExportCSV = useCallback(() => {
     if (!data || data.content.length === 0) return
 
@@ -64,7 +54,7 @@ export default function AdminCustomersPage() {
 
     const csvContent = [
       headers.join(','),
-      ...rows.map(r => r.map(v => `"${v}"`).join(',')),
+      ...rows.map((r) => r.map((v) => `"${v}"`).join(',')),
     ].join('\n')
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -75,18 +65,12 @@ export default function AdminCustomersPage() {
     URL.revokeObjectURL(link.href)
   }, [data])
 
-  /**
-   * Handler para visualizar detalhes de um cliente
-   */
   const handleViewCustomer = useCallback((customer: AdminCustomer) => {
-    // Placeholder para navegação para detalhes do cliente
-    console.log('View customer:', customer)
-    // router.push(`/admin/customers/${customer.id}`)
-  }, [])
+    router.push(`/admin/customers/${customer.id}`)
+  }, [router])
 
   return (
     <div className="space-y-6 p-6 animate-fade-in">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestão de Clientes</h1>
@@ -107,49 +91,32 @@ export default function AdminCustomersPage() {
         </Button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total de Clientes */}
         <div className="admin-stat-card">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Total de Clientes
-            </span>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total de Clientes</span>
             <div className="h-9 w-9 rounded-lg bg-[#003566]/10 flex items-center justify-center">
               <Users className="h-5 w-5 text-[#003566]" />
             </div>
           </div>
-          {isLoadingStats ? (
-            <Skeleton className="h-8 w-20" />
-          ) : (
+          {isLoadingStats ? <Skeleton className="h-8 w-20" /> : (
             <>
-              <div className="text-2xl font-bold text-gray-900">
-                {stats?.totalCustomers ?? 0}
-              </div>
-              <div className="text-xs text-gray-500 mt-1">
-                Cadastrados na plataforma
-              </div>
+              <div className="text-2xl font-bold text-gray-900">{stats?.totalCustomers ?? 0}</div>
+              <div className="text-xs text-gray-500 mt-1">Cadastrados na plataforma</div>
             </>
           )}
         </div>
 
-        {/* Clientes Ativos */}
         <div className="admin-stat-card">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Clientes Ativos
-            </span>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Clientes Ativos</span>
             <div className="h-9 w-9 rounded-lg bg-green-50 flex items-center justify-center">
               <TrendingUp className="h-5 w-5 text-green-600" />
             </div>
           </div>
-          {isLoadingStats ? (
-            <Skeleton className="h-8 w-20" />
-          ) : (
+          {isLoadingStats ? <Skeleton className="h-8 w-20" /> : (
             <>
-              <div className="text-2xl font-bold text-green-600">
-                {stats?.activeCustomers ?? 0}
-              </div>
+              <div className="text-2xl font-bold text-green-600">{stats?.activeCustomers ?? 0}</div>
               <div className="text-xs text-gray-500 mt-1">
                 {stats?.totalCustomers
                   ? `${Math.round((stats.activeCustomers / stats.totalCustomers) * 100)}% do total`
@@ -159,52 +126,37 @@ export default function AdminCustomersPage() {
           )}
         </div>
 
-        {/* Ticket Médio */}
         <div className="admin-stat-card">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Ticket Médio
-            </span>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Ticket Médio</span>
             <div className="h-9 w-9 rounded-lg bg-blue-50 flex items-center justify-center">
               <DollarSign className="h-5 w-5 text-blue-600" />
             </div>
           </div>
-          {isLoadingStats ? (
-            <Skeleton className="h-8 w-24" />
-          ) : (
+          {isLoadingStats ? <Skeleton className="h-8 w-24" /> : (
             <>
-              <div className="text-2xl font-bold text-gray-900">
-                {formatPrice(stats?.averageTicket ?? 0)}
-              </div>
+              <div className="text-2xl font-bold text-gray-900">{formatPrice(stats?.averageTicket ?? 0)}</div>
               <div className="text-xs text-gray-500 mt-1">Por cliente</div>
             </>
           )}
         </div>
 
-        {/* Receita Total */}
         <div className="admin-stat-card">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Receita Total
-            </span>
+            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Receita Total</span>
             <div className="h-9 w-9 rounded-lg bg-green-50 flex items-center justify-center">
               <ShoppingBag className="h-5 w-5 text-green-600" />
             </div>
           </div>
-          {isLoadingStats ? (
-            <Skeleton className="h-8 w-28" />
-          ) : (
+          {isLoadingStats ? <Skeleton className="h-8 w-28" /> : (
             <>
-              <div className="text-2xl font-bold text-gray-900">
-                {formatPrice(stats?.totalRevenue ?? 0)}
-              </div>
+              <div className="text-2xl font-bold text-gray-900">{formatPrice(stats?.totalRevenue ?? 0)}</div>
               <div className="text-xs text-gray-500 mt-1">Acumulada</div>
             </>
           )}
         </div>
       </div>
 
-      {/* Filtros */}
       <CustomerFilters
         filters={filters}
         onApplyFilters={setFilters}
@@ -212,7 +164,6 @@ export default function AdminCustomersPage() {
         resultCount={data?.totalElements}
       />
 
-      {/* Toolbar da tabela */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ColumnConfigModal
@@ -223,7 +174,6 @@ export default function AdminCustomersPage() {
         </div>
       </div>
 
-      {/* Tabela de Clientes */}
       {isLoading ? (
         <CustomerSkeletonTable />
       ) : data ? (
@@ -242,17 +192,11 @@ export default function AdminCustomersPage() {
             <div className="h-16 w-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
               <AlertCircle className="h-8 w-8 text-red-500" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-1">
-              Erro ao carregar clientes
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-700 mb-1">Erro ao carregar clientes</h3>
             <p className="text-sm text-gray-500 text-center max-w-sm mb-4">
               Não foi possível carregar a lista de clientes. Verifique sua conexão e tente novamente.
             </p>
-            <Button
-              variant="adminPrimary"
-              size="admin"
-              onClick={refresh}
-            >
+            <Button variant="adminPrimary" size="admin" onClick={refresh}>
               Tentar novamente
             </Button>
           </div>

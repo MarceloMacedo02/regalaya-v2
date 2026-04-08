@@ -1,7 +1,7 @@
 "use client"
 
 import { BaseChart, CHART_COLORS } from "./BaseChart"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Area, ResponsiveContainer } from "recharts"
+import { Area, AreaChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts"
 import { formatPrice } from "@/lib/utils"
 
 interface ChartDataPoint {

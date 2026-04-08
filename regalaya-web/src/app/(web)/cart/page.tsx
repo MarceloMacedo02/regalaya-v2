@@ -115,13 +115,14 @@ export default function CartPage() {
             <div key={item.productId} className="overflow-hidden rounded-lg border bg-white shadow-sm">
               <div className="flex gap-4 p-4">
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-zinc-100">
-                  {item.productImage ? (
+                  {item.productImage && item.productImage.split(",")[0] ? (
                     <Image
                       src={item.productImage.split(",")[0]}
                       alt={item.productName}
                       fill
                       className="object-cover"
                       sizes="96px"
+                      unoptimized
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">

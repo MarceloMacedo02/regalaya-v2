@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Save, Send } from "lucide-react"
@@ -9,6 +10,8 @@ import { TemplateStep } from "./TemplateStep"
 import { SchedulingStep } from "./SchedulingStep"
 import { useCampaignWizard } from "@/hooks/useCampaignWizard"
 import { useToast } from "@/hooks/use-toast"
+import { communicationsService } from "@/services/communications.service"
+import { templatesService } from "@/services/templates.service"
 
 interface CampaignWizardProps {
   onComplete?: () => void
@@ -23,6 +26,8 @@ const STEP_TITLES = [
 
 export function CampaignWizard({ onComplete }: CampaignWizardProps) {
   const { toast } = useToast()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedTemplateName, setSelectedTemplateName] = useState("")
   const {
     currentStep,
     formData,
@@ -32,19 +37,70 @@ export function CampaignWizard({ onComplete }: CampaignWizardProps) {
     prevStep,
     goToStep,
     saveDraft,
+    reset,
     totalSteps,
   } = useCampaignWizard()
+
+  useEffect(() => {
+    const loadTemplate = async () => {
+      if (!formData.selectedTemplateId) {
+        setSelectedTemplateName("")
+        return
+      }
+
+      try {
+        const template = await templatesService.findById(formData.selectedTemplateId)
+        setSelectedTemplateName(template.name)
+      } catch {
+        setSelectedTemplateName("Template selecionado")
+      }
+    }
+
+    loadTemplate()
+  }, [formData.selectedTemplateId])
 
   const handleNext = () => {
     nextStep()
   }
 
-  const handleSendCampaign = () => {
-    toast({
-      title: "Campanha enviada!",
-      description: `A campanha "${formData.campaignName}" foi agendada com sucesso.`,
-    })
-    onComplete?.()
+  const handleSendCampaign = async () => {
+    if (!formData.selectedTemplateId) {
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      const scheduledAt = formData.sendNow || !formData.scheduledDate
+        ? null
+        : `${formData.scheduledDate}T${formData.scheduledTime || "09:00"}:00`
+
+      const campaign = await communicationsService.sendCampaign({
+        name: formData.campaignName,
+        type: formData.communicationType,
+        segmentCode: formData.customerSegment,
+        templateId: formData.selectedTemplateId,
+        customization: formData.templateCustomization,
+        sendNow: formData.sendNow,
+        scheduledAt,
+        customFilters: formData.customFilters,
+        selectedCustomerIds: formData.selectedCustomers,
+      })
+
+      reset()
+      toast({
+        title: "Campanha criada",
+        description: `Campanha "${campaign.name}" registrada com ${campaign.recipientCount} destinatários.`,
+      })
+      onComplete?.()
+    } catch (error: any) {
+      toast({
+        title: "Erro ao criar campanha",
+        description: error.message || "Não foi possível registrar a campanha.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleSaveDraft = () => {
@@ -98,7 +154,7 @@ export function CampaignWizard({ onComplete }: CampaignWizardProps) {
             onScheduledTimeChange={(time) => updateField("scheduledTime", time)}
             customerSegment={formData.customerSegment}
             communicationType={formData.communicationType}
-            templateName="Template selecionado"
+            templateName={selectedTemplateName}
             estimatedRecipients={formData.customerSegment === "ALL" ? 1250 : formData.customerSegment === "VIP" ? 180 : formData.customerSegment === "NEW" ? 95 : formData.customerSegment === "INACTIVE" ? 320 : undefined}
             error={errors.campaignName || errors.scheduledDate}
           />
@@ -174,9 +230,9 @@ export function CampaignWizard({ onComplete }: CampaignWizardProps) {
               <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSendCampaign} className="gap-1 bg-green-600 hover:bg-green-700">
+            <Button onClick={handleSendCampaign} className="gap-1 bg-green-600 hover:bg-green-700" disabled={isSubmitting}>
               <Send className="h-4 w-4" />
-              Enviar Campanha
+              {isSubmitting ? "Enviando..." : "Enviar Campanha"}
             </Button>
           )}
         </div>

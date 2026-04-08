@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { customersService, type CustomerChartData } from "@/services"
-import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, TrendingUp, BarChart3, PieChart, DollarSign } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import LTVEvolutionChart from "@/components/admin/customers/charts/LTVEvolutionChart"

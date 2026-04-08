@@ -7,13 +7,13 @@ interface WishlistProduct {
   id: string
   name: string
   slug: string
-  description: string
+  description?: string
   shortDescription?: string
   price: number
   compareAtPrice?: number
   images: string[]
   category?: string | { name?: string }
-  tags: string[]
+  tags?: string[]
   sku?: string
   stock: number
   isActive: boolean

@@ -2,22 +2,20 @@
 
 import { useState } from "react"
 import {
-  LineChart,
-  Line,
-  AreaChart,
   Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Calendar, TrendingUp } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
-import { SalesData } from "@/lib/mock-data"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatPrice } from "@/lib/utils"
-import { Calendar, TrendingUp, TrendingDown } from "lucide-react"
+import { SalesData } from "@/lib/mock-data"
 
 interface SalesChartProps {
   data: SalesData[]
@@ -37,6 +35,7 @@ export function SalesChart({ data, comparison = false }: SalesChartProps) {
 
   const totalRevenue = data.reduce((sum, item) => sum + item.revenue, 0)
   const totalOrders = data.reduce((sum, item) => sum + item.orders, 0)
+  const averageTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
   return (
     <Card>
@@ -71,9 +70,9 @@ export function SalesChart({ data, comparison = false }: SalesChartProps) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px] w-full min-h-0">
-          <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+      <CardContent className="min-w-0">
+        <div className="h-[300px] w-full min-w-0 min-h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -114,7 +113,6 @@ export function SalesChart({ data, comparison = false }: SalesChartProps) {
           </ResponsiveContainer>
         </div>
 
-        {/* Stats Summary */}
         <div className="mt-4 grid grid-cols-2 gap-4">
           <div className="rounded-lg border p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -126,9 +124,9 @@ export function SalesChart({ data, comparison = false }: SalesChartProps) {
           <div className="rounded-lg border p-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <TrendingUp className="h-4 w-4 text-green-500" />
-              <span>Ticket Médio</span>
+              <span>Ticket Medio</span>
             </div>
-            <p className="mt-1 text-2xl font-bold">{formatPrice(totalRevenue / totalOrders)}</p>
+            <p className="mt-1 text-2xl font-bold">{formatPrice(averageTicket)}</p>
           </div>
         </div>
       </CardContent>

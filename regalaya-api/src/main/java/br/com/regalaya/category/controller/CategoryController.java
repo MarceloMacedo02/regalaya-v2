@@ -1,15 +1,18 @@
 package br.com.regalaya.category.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import br.com.regalaya.category.dto.requests.CreateCategoryRequest;
 import br.com.regalaya.category.dto.responses.CategoryResponse;
 import br.com.regalaya.category.services.CategoryService;
+import br.com.regalaya.shared.service.StorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,9 +24,11 @@ import jakarta.validation.Valid;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final StorageService storageService;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, StorageService storageService) {
         this.categoryService = categoryService;
+        this.storageService = storageService;
     }
 
     @GetMapping
@@ -72,5 +77,20 @@ public class CategoryController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         categoryService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/upload-image")
+    @Operation(summary = "Upload category image to S3")
+    public ResponseEntity<Map<String, String>> uploadImage(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "categoryId", required = false) String categoryId) {
+        
+        String folder = "categories";
+        if (categoryId != null && !categoryId.isEmpty()) {
+            folder = "categories/" + categoryId;
+        }
+        
+        Map<String, String> result = storageService.uploadFile(file, folder, null);
+        return ResponseEntity.ok(result);
     }
 }

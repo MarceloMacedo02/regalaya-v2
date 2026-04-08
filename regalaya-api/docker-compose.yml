@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 # ===================================================================
 # REGALAYA API - Docker Compose para Desenvolvimento
@@ -29,7 +29,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-regalaya} -d ${POSTGRES_DB:-regalaya_dev}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-regalaya} -d ${POSTGRES_DB:-regalaya_dev}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -75,8 +79,8 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@regalaya.com.br
       PGADMIN_DEFAULT_PASSWORD: admin123
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
       - "5050:80"
     volumes:
@@ -116,24 +120,20 @@ services:
   # Dashboard: http://localhost:4566/_localstack/dashboard
   # ===================================================================
   localstack:
-    image: localstack/localstack-pro:latest
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566" # LocalStack Gateway
+      - "127.0.0.1:4510-4559:4510-4559"
     container_name: regalaya-localstack
     restart: unless-stopped
     environment:
-      - LOCALSTACK_AUTH_TOKEN=ls-rUyoZolO-3555-rEMo-BucI-WaPA4677160b
-      - SERVICES=s3,sqs,sns,ses,lambda,dynamodb,cloudformation,sts,iam
-      - DEFAULT_REGION=us-east-1
+      - LOCALSTACK_AUTH_TOKEN=ls-jacEHebO-KUCA-pico-PuGe-84940013540d
+      - SERVICES=s3,sqs,sns,lambda,dynamodb,sts,iam
       - DEBUG=1
-      - LAMBDA_EXECUTOR=local
       - PERSISTENCE=1
-      - HOSTNAME_EXTERNAL=localstack
-      - EAGER_SERVICE_LOADING=1
-    ports:
-      - "4566:4566"
-      - "4510-4559:4510-4559"
     volumes:
       - localstack_data:/var/lib/localstack
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./localstack-init.sh:/etc/localstack/init/ready.d/init.sh
     networks:
       - regalaya-network
     healthcheck:
@@ -142,8 +142,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    profiles:
-      - tools
 
   # ===================================================================
   # Mailpit - Servidor SMTP local para desenvolvimento com UI web

@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  Loader2,
 } from "lucide-react"
 import {
   Dialog,
@@ -23,12 +24,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { productsService } from "@/services/products.service"
 
 interface ImageUploadManagerProps {
   images: string[]
   onChange: (images: string[]) => void
   maxImages?: number
   label?: string
+  productId?: string
 }
 
 export function ImageUploadManager({
@@ -36,10 +39,12 @@ export function ImageUploadManager({
   onChange,
   maxImages = 6,
   label = "Imagens do Produto",
+  productId,
 }: ImageUploadManagerProps) {
   const [dragOver, setDragOver] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const canAddMore = images.length < maxImages
@@ -47,27 +52,38 @@ export function ImageUploadManager({
   const additionalImages = images.slice(1)
 
   const handleFileSelect = useCallback(
-    (files: FileList | null) => {
+    async (files: FileList | null) => {
       if (!files) return
 
       const newImages: string[] = []
       const remainingSlots = maxImages - images.length
       const filesToProcess = Math.min(files.length, remainingSlots)
 
+      setUploading(true)
+      
       for (let i = 0; i < filesToProcess; i++) {
         const file = files[i]
         if (file.type.startsWith("image/")) {
-          // In production, upload to S3/Cloudinary and get URL
-          const url = URL.createObjectURL(file)
-          newImages.push(url)
+          try {
+            // Upload para S3
+            const result = await productsService.uploadImage(file, productId)
+            newImages.push(result.url)
+          } catch (error) {
+            console.error("Erro ao fazer upload da imagem:", error)
+            // Fallback para URL local se o upload falhar
+            const url = URL.createObjectURL(file)
+            newImages.push(url)
+          }
         }
       }
+      
+      setUploading(false)
 
       if (newImages.length > 0) {
         onChange([...images, ...newImages])
       }
     },
-    [images, maxImages, onChange]
+    [images, maxImages, onChange, productId]
   )
 
   const handleDrop = useCallback(
@@ -319,16 +335,23 @@ export function ImageUploadManager({
                   ? "border-primary bg-primary/5"
                   : "border-muted-foreground/25 bg-muted hover:bg-muted/80"
               )}
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => !uploading && fileInputRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
+              disabled={uploading}
             >
-              <Plus className="h-6 w-6 text-muted-foreground mb-1" />
-              <span className="text-xs text-muted-foreground">Adicionar</span>
-              <span className="text-xs text-muted-foreground">
-                {maxImages - images.length} restantes
-              </span>
+              {uploading ? (
+                <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+              ) : (
+                <>
+                  <Plus className="h-6 w-6 text-muted-foreground mb-1" />
+                  <span className="text-xs text-muted-foreground">Adicionar</span>
+                  <span className="text-xs text-muted-foreground">
+                    {maxImages - images.length} restantes
+                  </span>
+                </>
+              )}
             </button>
           )}
         </div>
