@@ -1,0 +1,15 @@
+{
+  "name": "regalaya-api",
+  "version": "1.0.0",
+  "description": "Backend enterprise desenvolvido com Spring Boot 3.4+, seguindo padrões de Clean Architecture, DDD e SOLID.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "playwright": "^1.59.1"
+  }
+}

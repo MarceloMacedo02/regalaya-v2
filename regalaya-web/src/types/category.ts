@@ -1,0 +1,11 @@
+// Category types (re-exported from product.ts)
+
+export interface Category {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  parentId?: string
+  image?: string
+  children?: Category[]
+}

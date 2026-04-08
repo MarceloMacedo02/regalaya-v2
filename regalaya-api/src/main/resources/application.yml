@@ -1,0 +1,165 @@
+# Application
+spring:
+  application:
+    name: regalaya-api
+
+  main:
+    allow-bean-definition-overriding: true
+
+  # Database Configuration
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/regalaya}
+    username: ${DB_USERNAME:regalaya}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+
+  # JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    open-in-view: false
+
+  # Mail Configuration
+  mail:
+    host: ${EMAIL_HOST:localhost}
+    port: ${EMAIL_PORT:1025}
+    username: ${EMAIL_USERNAME:}
+    password: ${EMAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  # Virtual Threads (Performance)
+  threads:
+    virtual:
+      enabled: true
+
+# Server
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    br.com.regalaya: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# JWT Configuration
+app:
+  jwt:
+    secret: ${JWT_SECRET:23f2f431c5781cf694b0f6335816c132439498cc934542c0f236bf83f053a3480c43eee79baa419975977192ed01cc6cb1a55eec1cff20384dca17534941c3bd}
+    expiration: 86400000 # 24 hours in milliseconds
+    refresh-expiration: 604800000 # 7 days in milliseconds
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+  # Email Configuration (for password recovery)
+  email:
+    from: ${EMAIL_FROM:noreply@regalaya.local}
+    from-name: ${EMAIL_FROM_NAME:Regalaya}
+
+  # Base URL for email links
+  base-url: ${APP_BASE_URL:http://localhost:3008}
+
+  # Shipping Configuration
+  shipping:
+    free-shipping-threshold: ${FREE_SHIPPING_THRESHOLD:299.90}
+    correios:
+      url: ${CORREIOS_URL:https://api.correios.com.br/v1}
+      username: ${CORREIOS_USERNAME:}
+      password: ${CORREIOS_PASSWORD:}
+      origin-cep: ${CORREIOS_ORIGIN_CEP:00000000}
+
+  # Payment Configuration
+  payment:
+    max-installments: ${PAYMENT_MAX_INSTALLMENTS:12}
+    min-installment-value: ${PAYMENT_MIN_INSTALLMENT_VALUE:20.00}
+    installment-interest-rate: ${PAYMENT_INSTALLMENT_INTEREST_RATE:0.0199}
+    pix-expiration-minutes: ${PAYMENT_PIX_EXPIRATION_MINUTES:10}
+    stripe:
+      secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
+      publishable-key: ${STRIPE_PUBLISHABLE_KEY:pk_test_placeholder}
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+      enabled: ${STRIPE_ENABLED:false}
+    mercado-pago:
+      access-token: ${MERCADO_PAGO_ACCESS_TOKEN:TEST_placeholder}
+      webhook-secret: ${MERCADO_PAGO_WEBHOOK_SECRET:placeholder}
+      enabled: ${MERCADO_PAGO_ENABLED:false}
+
+# AWS / LocalStack Configuration
+cloud:
+  aws:
+    region:
+      static: ${AWS_REGION:us-east-1}
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID:test}
+      secret-key: ${AWS_SECRET_ACCESS_KEY:test}
+    endpoint:
+      uri: ${AWS_ENDPOINT_URL:http://localhost:4566}
+    s3:
+      bucket: ${AWS_S3_BUCKET:regalaya-uploads}
+      path-style-access: true
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentProvider:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 120s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        recordExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - br.com.regalaya.payment.exception.PaymentProcessingException
+  retry:
+    instances:
+      paymentProvider:
+        maxAttempts: 3
+        waitDuration: 1000
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException

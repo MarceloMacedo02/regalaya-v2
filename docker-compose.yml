@@ -1,0 +1,274 @@
+version: '3.8'
+
+# ===================================================================
+# REGALAYA - Docker Compose Unificado para Desenvolvimento
+# ===================================================================
+# Uso: docker-compose up -d
+# Parar: docker-compose down
+# Limpar volumes: docker-compose down -v
+# ===================================================================
+
+services:
+  # ===================================================================
+  # PostgreSQL - Banco de Dados Principal
+  # ===================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: regalaya-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-regalaya_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-regalaya}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-regalaya123}
+      TZ: America/Sao_Paulo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-regalaya} -d ${POSTGRES_DB:-regalaya_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - regalaya-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ===================================================================
+  # Redis - Cache e Session Store
+  # ===================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: regalaya-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - regalaya-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # ===================================================================
+  # Mailpit - Servidor SMTP local para desenvolvimento
+  # ===================================================================
+  # SMTP: localhost:1025
+  # UI Web: http://localhost:8025
+  # ===================================================================
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: regalaya-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - regalaya-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8025"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ===================================================================
+  # LocalStack - AWS Services Emulator (S3, SQS, SNS, etc.)
+  # ===================================================================
+  # UI Web: http://localhost:4566
+  # ===================================================================
+  localstack:
+    image: localstack/localstack-pro:latest
+    container_name: regalaya-localstack
+    restart: unless-stopped
+    environment:
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-}
+      - SERVICES=s3,sqs,sns,ses,lambda,dynamodb,cloudformation,sts,iam
+      - DEFAULT_REGION=us-east-1
+      - DEBUG=1
+      - LAMBDA_EXECUTOR=local
+      - PERSISTENCE=1
+      - HOSTNAME_EXTERNAL=localstack
+      - EAGER_SERVICE_LOADING=1
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - regalaya-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ===================================================================
+  # pgAdmin - Interface Web para PostgreSQL (opcional)
+  # ===================================================================
+  # Acesse via: http://localhost:5050
+  # Email: admin@regalaya.com.br
+  # Senha: admin123
+  # ===================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: regalaya-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@regalaya.com.br
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - regalaya-network
+    profiles:
+      - tools
+
+  # ===================================================================
+  # Redis Commander - Interface Web para Redis (opcional)
+  # ===================================================================
+  # Acesse via: http://localhost:8081
+  # ===================================================================
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: regalaya-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      HTTP_USER: admin
+      HTTP_PASSWORD: admin123
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - regalaya-network
+    profiles:
+      - tools
+
+  # ===================================================================
+  # Regalaya API - Backend Spring Boot
+  # ===================================================================
+  api:
+    build:
+      context: ./regalaya-api
+      dockerfile: Dockerfile
+    container_name: regalaya-api
+    restart: unless-stopped
+    env_file:
+      - ./regalaya-api/.env
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-regalaya_dev}
+      DB_USERNAME: ${POSTGRES_USER:-regalaya}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-regalaya123}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev,docker}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_healthy
+    networks:
+      - regalaya-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # ===================================================================
+  # Regalaya Web - Frontend Next.js
+  # ===================================================================
+  web:
+    build:
+      context: ./regalaya-web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080/api/v1}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    container_name: regalaya-web
+    restart: unless-stopped
+    env_file:
+      - ./regalaya-web/.env.local
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - regalaya-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# ===================================================================
+# Redes e Volumes
+# ===================================================================
+networks:
+  regalaya-network:
+    driver: bridge
+    name: regalaya-network
+
+volumes:
+  postgres_data:
+    name: regalaya-postgres-data
+    driver: local
+  redis_data:
+    name: regalaya-redis-data
+    driver: local
+  pgadmin_data:
+    name: regalaya-pgadmin-data
+    driver: local
+  localstack_data:
+    name: regalaya-localstack-data
+    driver: local
+
+# ===================================================================
+# Observações:
+# - Para iniciar todos os serviços: docker compose up -d
+# - Para iniciar apenas infra: docker compose up -d postgres redis mailpit
+# - Para iniciar com tools: docker compose --profile tools up -d
+# - A aplicação estará em: http://localhost:3000
+# - Swagger UI: http://localhost:8080/api/swagger-ui.html
+# ===================================================================

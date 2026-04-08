@@ -1,0 +1,242 @@
+# Sprint Status Tracking - Regalaya
+# generated: 2026-04-07T00:00:00.000Z
+# last_updated: 2026-04-07T00:00:00.000Z
+# project: regalaya01
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+generated: 2026-04-07T00:00:00.000Z
+last_updated: 2026-04-07T14:30:00.000Z
+project: regalaya01
+project_key: NOKEY
+tracking_system: file-system
+story_location: implementation-artifacts
+
+development_status:
+  # ÉPICO 01: Configuração de Infraestrutura e DevOps ✅
+  epic-1: done
+  01-1-setup-repositorios: done
+  01-2-docker-configuracao: done
+  01-3-setup-ambiente: done
+  01-4-cicd-configuracao: done
+  epic-1-retrospective: optional
+
+  # ÉPICO 02: Autenticação e Autorização ✅
+  epic-2: done
+  02-1-registro-usuario: done
+  02-2-login-jwt: done
+  02-3-recuperacao-senha: done
+  02-4-sistema-rbac: done
+  02-5-refresh-token-logout: done
+  epic-2-retrospective: optional
+
+  # ÉPICO 03: Gestão de Pessoas Queridas (Contatos) ✅
+  epic-3: done
+  03-1-cadastro-contato: done
+  03-2-edicao-exclusao-contato: done
+  03-3-cadastro-datas-especiais: done
+  03-4-importacao-contatos: done
+  epic-3-retrospective: optional
+
+  # ÉPICO 04: Catálogo de Produtos ✅
+  epic-4: done
+  04-1-listagem-produtos: done
+  04-2-detalhes-produto: done
+  04-3-gestao-categorias-admin: done
+  04-4-gestao-produtos-admin: done
+  04-5-busca-produtos: done
+  epic-4-retrospective: optional
+
+  # ÉPICO 05: Carrinho de Compras ✅
+  epic-5: done
+  05-1-adicionar-carrinho: done
+  05-2-gerenciar-itens-carrinho: done
+  05-3-aplicar-cupons: done
+  epic-5-retrospective: optional
+
+  # ÉPICO 06: Checkout e Pagamento
+  epic-6: done
+  06-1-processo-checkout: done
+  06-2-integracao-pix: done
+  06-3-integracao-cartao: done
+  06-4-calculo-frete: done
+  epic-6-retrospective: optional
+
+  # ÉPICO 07: Gestão de Pedidos (Backend)
+  epic-7: done
+  07-1-listagem-pedidos-admin: done
+  07-2-detalhes-pedido-admin: done
+  07-3-alteracao-status-pedido: done
+  07-4-processamento-reembolso: done
+  epic-7-retrospective: optional
+
+  # ÉPICO 08: Gestão de Clientes (Admin)
+  epic-8: in-progress
+  08-1-listagem-clientes-admin: ready-for-dev
+  08-2.1-perfil-cliente: review
+  08-2.2-historico-pedidos-admin: review
+  08-2.3-metricas-segmentacao: review
+  08-2.4-graficos-visualizacao: review
+  08-3-comunicacao-massa: ready-for-dev
+  epic-8-retrospective: optional
+
+  # ÉPICO 09: Notificações e Lembretes
+  epic-9: backlog
+  09-1-agendamento-notificacoes: backlog
+  09-2-envio-whatsapp: backlog
+  09-3-envio-email-transacional: backlog
+  epic-9-retrospective: optional
+
+  # ÉPICO 10: Curadoria de Presentes com IA
+  epic-10: backlog
+  10-1-recomendacao-perfil: backlog
+  10-2-geracao-mensagem-personalizada: backlog
+  10-3-rag-retrieval-augmented: backlog
+  10-4-limite-uso-ia: backlog
+  epic-10-retrospective: optional
+
+  # ÉPICO 11: Integração WhatsApp Bot
+  epic-11: backlog
+  11-1-menu-inicial-bot: backlog
+  11-2-cadastro-pessoa-whatsapp: backlog
+  11-3-sugestoes-whatsapp: backlog
+  11-4-agendamento-mensagem-whatsapp: backlog
+  epic-11-retrospective: optional
+
+  # ÉPICO 12: Dashboard e Analytics (Admin)
+  epic-12: backlog
+  12-1-dashboard-principal-admin: backlog
+  12-2-grafico-vendas: backlog
+  12-3-produtos-mais-vendidos: backlog
+  12-4-funil-vendas: backlog
+  12-5-cohort-analysis: backlog
+  epic-12-retrospective: optional
+
+  # ÉPICO 13: Conteúdo e Configurações (Admin)
+  epic-13: backlog
+  13-1-gestao-banners: backlog
+  13-2-paginas-institucionais: backlog
+  13-3-configuracoes-loja: backlog
+  epic-13-retrospective: optional
+
+  # ÉPICO 14: Sistema de Estoque
+  epic-14: backlog
+  14-1-controle-estoque: backlog
+  14-2-movimentacoes-estoque: backlog
+  14-3-alertas-estoque: backlog
+  14-4-gestao-fornecedores: backlog
+  epic-14-retrospective: optional
+
+  # ÉPICO 15: Localização e Endereços
+  epic-15: backlog
+  15-1-cadastro-enderecos: backlog
+  15-2-coleta-endereco-whatsapp: backlog
+  15-3-validacao-cep: backlog
+  epic-15-retrospective: optional
+
+  # ÉPICO 16: Segurança e Compliance (LGPD)
+  epic-16: backlog
+  16-1-criptografia-dados: backlog
+  16-2-protecao-ataques: backlog
+  16-3-gestao-consentimento-lgpd: backlog
+  16-4-mascaramento-dados-logs: backlog
+  epic-16-retrospective: optional
+
+  # ÉPICO 17: Performance e Otimização
+  epic-17: backlog
+  17-1-caching-redis: backlog
+  17-2-indices-banco-dados: backlog
+  17-3-cdn-assets: backlog
+  17-4-lazy-loading-code-splitting: backlog
+  epic-17-retrospective: optional
+
+  # ÉPICO 18: Testes e Qualidade
+  epic-18: backlog
+  18-1-testes-unitarios-backend: backlog
+  18-2-testes-integracao-backend: backlog
+  18-3-testes-e2e-frontend: backlog
+  18-4-testes-api-contract: backlog
+  epic-18-retrospective: optional
+
+  # ÉPICO 19: SEO e Descoberta
+  epic-19: backlog
+  19-1-seo-on-page: backlog
+  19-2-urls-amigaveis: backlog
+  19-3-performance-seo: backlog
+  epic-19-retrospective: optional
+
+  # ÉPICO 20: Sistema de Wishlist
+  epic-20: backlog
+  20-1-criar-wishlist: backlog
+  20-2-compartilhar-wishlist: backlog
+  epic-20-retrospective: optional
+
+  # ÉPICO 21: Programa de Fidelidade
+  epic-21: backlog
+  21-1-acumular-pontos: backlog
+  21-2-resgatar-pontos: backlog
+  epic-21-retrospective: optional
+
+  # ÉPICO 22: Rastreamento de Entrega
+  epic-22: backlog
+  22-1-rastreamento-via-api: backlog
+  22-2-notificacao-entrega: backlog
+  epic-22-retrospective: optional
+
+  # ÉPICO 23: Webhooks e Integrações Externas
+  epic-23: backlog
+  23-1-webhook-pagamento: backlog
+  23-2-webhook-entrega: backlog
+  23-3-gerenciamento-webhooks-admin: backlog
+  epic-23-retrospective: optional
+
+  # ÉPICO 24: Internacionalização (i18n)
+  epic-24: backlog
+  24-1-i18n-backend: backlog
+  24-2-i18n-frontend: backlog
+  epic-24-retrospective: optional
+
+  # ÉPICO 25: Chat de Suporte
+  epic-25: backlog
+  25-1-chat-ao-vivo: backlog
+  25-2-painel-agente-admin: backlog
+  epic-25-retrospective: optional
+
+  # ÉPICO 26: Relatórios e Exportação
+  epic-26: backlog
+  26-1-relatorios-customizados-admin: backlog
+  26-2-exportacao-dados-admin: backlog
+  epic-26-retrospective: optional
+
+  # ÉPICO 27: Deployment e Infraestrutura AWS
+  epic-27: backlog
+  27-1-infraestrutura-iac: backlog
+  27-2-deploy-continuo: backlog
+  27-3-monitoramento-logs: backlog
+  27-4-backup-disaster-recovery: backlog
+  epic-27-retrospective: optional
+
+# Totais
+totals:
+  epics: 27
+  stories: 127
+  retrospectives: 27

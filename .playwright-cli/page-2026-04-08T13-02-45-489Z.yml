@@ -1,0 +1,427 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - img [ref=e7]
+          - generic [ref=e10]: São Paulo, SP - Brasil
+        - button "Selecionar idioma" [ref=e12]:
+          - generic [ref=e13]: 🇧🇷
+          - generic [ref=e14]: PT
+          - img [ref=e15]
+      - generic [ref=e17]:
+        - link "Entrar / Cadastrar" [ref=e18] [cursor=pointer]:
+          - /url: /login
+        - link "Sobre Nós" [ref=e20] [cursor=pointer]:
+          - /url: /about
+        - link "Rastrear Pedido" [ref=e22] [cursor=pointer]:
+          - /url: /track
+        - link "FAQ" [ref=e24] [cursor=pointer]:
+          - /url: /faq
+    - generic [ref=e27]:
+      - link "Regalaya" [ref=e28] [cursor=pointer]:
+        - /url: /
+        - heading "Regalaya" [level=1] [ref=e29]
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - img [ref=e33]
+          - generic [ref=e38]:
+            - paragraph [ref=e39]: Frete grátis
+            - paragraph [ref=e40]: Em pedidos acima de R$199
+        - generic [ref=e42]:
+          - img [ref=e44]
+          - generic [ref=e47]:
+            - paragraph [ref=e48]: suporte@regalaya.com
+            - paragraph [ref=e49]: (11) 99999-9999
+        - 'button "Carrinho: 0 itens R$ 0,00" [ref=e51]':
+          - img [ref=e53]
+          - generic [ref=e56]:
+            - paragraph [ref=e57]: "Carrinho: 0 itens"
+            - paragraph [ref=e58]: R$ 0,00
+      - generic [ref=e59]:
+        - button "Abrir busca" [ref=e61]:
+          - img [ref=e62]
+        - link "Lista de desejos" [ref=e65] [cursor=pointer]:
+          - /url: /wishlist
+          - button "Lista de desejos" [ref=e66]:
+            - img [ref=e67]
+    - navigation "Navegação principal" [ref=e70]:
+      - generic [ref=e71]:
+        - generic [ref=e72]:
+          - link "Início" [ref=e74] [cursor=pointer]:
+            - /url: /
+          - button "Loja" [ref=e77]
+          - button "Páginas" [ref=e80]
+          - link "Nossa História" [ref=e82] [cursor=pointer]:
+            - /url: /about
+          - link "Blog" [ref=e84] [cursor=pointer]:
+            - /url: /blog
+          - link "Contato" [ref=e86] [cursor=pointer]:
+            - /url: /contact
+        - button "Buscar" [ref=e88]:
+          - img [ref=e89]
+  - main [ref=e92]:
+    - generic [ref=e93]:
+      - generic [ref=e95]:
+        - complementary [ref=e97]:
+          - generic [ref=e98]:
+            - heading "Categorias" [level=2] [ref=e99]
+            - list [ref=e100]:
+              - listitem [ref=e101]:
+                - link "Chocolates" [ref=e102] [cursor=pointer]:
+                  - /url: /categories/chocolates
+                  - generic [ref=e103]: Chocolates
+                  - img [ref=e104]
+              - listitem [ref=e106]:
+                - link "Flores" [ref=e107] [cursor=pointer]:
+                  - /url: /categories/flores
+                  - generic [ref=e108]: Flores
+                  - img [ref=e109]
+              - listitem [ref=e111]:
+                - link "Bebidas" [ref=e112] [cursor=pointer]:
+                  - /url: /categories/bebidas
+                  - generic [ref=e113]: Bebidas
+                  - img [ref=e114]
+              - listitem [ref=e116]:
+                - link "Bem-estar" [ref=e117] [cursor=pointer]:
+                  - /url: /categories/bem-estar
+                  - generic [ref=e118]: Bem-estar
+                  - img [ref=e119]
+              - listitem [ref=e121]:
+                - link "Acessórios" [ref=e122] [cursor=pointer]:
+                  - /url: /categories/acessorios
+                  - generic [ref=e123]: Acessórios
+                  - img [ref=e124]
+              - listitem [ref=e126]:
+                - link "Personalizados" [ref=e127] [cursor=pointer]:
+                  - /url: /categories/personalizados
+                  - generic [ref=e128]: Personalizados
+                  - img [ref=e129]
+              - listitem [ref=e131]:
+                - link "Decoração" [ref=e132] [cursor=pointer]:
+                  - /url: /categories/decoracao
+                  - generic [ref=e133]: Decoração
+                  - img [ref=e134]
+              - listitem [ref=e136]:
+                - link "Experiências" [ref=e137] [cursor=pointer]:
+                  - /url: /categories/experiencias
+                  - generic [ref=e138]: Experiências
+                  - img [ref=e139]
+          - link "Presentes Populares Descubra os presentes mais procurados" [ref=e141] [cursor=pointer]:
+            - /url: /products?popular=true
+            - generic [ref=e142]:
+              - img [ref=e144]
+              - generic [ref=e148]:
+                - heading "Presentes Populares" [level=3] [ref=e149]
+                - paragraph [ref=e150]: Descubra os presentes mais procurados
+          - link "Entrega Rápida Receba em até 24h na capital" [ref=e151] [cursor=pointer]:
+            - /url: /products?fast-delivery=true
+            - generic [ref=e152]:
+              - img [ref=e154]
+              - generic [ref=e159]:
+                - heading "Entrega Rápida" [level=3] [ref=e160]
+                - paragraph [ref=e161]: Receba em até 24h na capital
+          - link "Ofertas Relâmpago Promoções por tempo limitado" [ref=e162] [cursor=pointer]:
+            - /url: /products?sale=true
+            - generic [ref=e163]:
+              - img [ref=e165]
+              - generic [ref=e167]:
+                - heading "Ofertas Relâmpago" [level=3] [ref=e168]
+                - paragraph [ref=e169]: Promoções por tempo limitado
+        - generic [ref=e170]:
+          - generic [ref=e172]:
+            - generic [ref=e173]:
+              - generic [ref=e174]: Novidades
+              - heading "Envie Seu Amor" [level=2] [ref=e175]
+              - paragraph [ref=e176]: Presentes únicos para momentos inesquecíveis. Encontre o presente perfeito para quem você ama.
+              - link "Enviar Presente" [ref=e177] [cursor=pointer]:
+                - /url: /products
+                - text: Enviar Presente
+                - img [ref=e178]
+            - img "Envie Seu Amor" [ref=e181]
+          - generic [ref=e182]:
+            - link "Dia dos Namorados Presentes românticos com até 30% OFF Ver Ofertas Dia dos Namorados" [ref=e183] [cursor=pointer]:
+              - /url: /products?occasion=love
+              - generic [ref=e184]:
+                - generic [ref=e185]:
+                  - heading "Dia dos Namorados" [level=3] [ref=e186]
+                  - paragraph [ref=e187]: Presentes românticos com até 30% OFF
+                  - generic [ref=e188]:
+                    - text: Ver Ofertas
+                    - img [ref=e189]
+                - img "Dia dos Namorados" [ref=e192]
+            - link "Cestas Especiais Monte a cesta perfeita para qualquer ocasião Montar Agora Cestas Especiais" [ref=e193] [cursor=pointer]:
+              - /url: /products?category=cestas
+              - generic [ref=e194]:
+                - generic [ref=e195]:
+                  - heading "Cestas Especiais" [level=3] [ref=e196]
+                  - paragraph [ref=e197]: Monte a cesta perfeita para qualquer ocasião
+                  - generic [ref=e198]:
+                    - text: Montar Agora
+                    - img [ref=e199]
+                - img "Cestas Especiais" [ref=e202]
+          - generic [ref=e203]:
+            - generic [ref=e204]:
+              - heading "Produtos em Destaque" [level=2] [ref=e205]
+              - link "Ver Todos →" [ref=e206] [cursor=pointer]:
+                - /url: /products
+            - generic [ref=e207]:
+              - link "Caixa de Bombons Belga Oferta 4 Adicionar aos favoritos Adicionar Chocolates Caixa de Bombons Belga 12 chocolates belgas artesanais R$ 89,90 R$ 109,90" [ref=e208] [cursor=pointer]:
+                - /url: /products/caixa-bombons-belga
+                - generic [ref=e209]:
+                  - generic [ref=e210]:
+                    - img "Caixa de Bombons Belga" [ref=e211]
+                    - generic [ref=e212]: Oferta
+                    - generic [ref=e213]:
+                      - img [ref=e214]
+                      - text: "4"
+                    - button "Adicionar aos favoritos" [ref=e219]:
+                      - img [ref=e220]
+                    - button "Adicionar" [ref=e223]:
+                      - img [ref=e224]
+                      - text: Adicionar
+                  - generic [ref=e228]:
+                    - generic [ref=e229]: Chocolates
+                    - heading "Caixa de Bombons Belga" [level=3] [ref=e230]
+                  - paragraph [ref=e232]: 12 chocolates belgas artesanais
+                  - generic [ref=e234]:
+                    - generic [ref=e235]: R$ 89,90
+                    - generic [ref=e236]: R$ 109,90
+              - link "Buquê de Flores Artesanais 3 Adicionar aos favoritos Adicionar Flores Buquê de Flores Artesanais Flores artesanais exclusivas R$ 159,90" [ref=e237] [cursor=pointer]:
+                - /url: /products/bouquet-flores-artesanais
+                - generic [ref=e238]:
+                  - generic [ref=e239]:
+                    - img "Buquê de Flores Artesanais" [ref=e240]
+                    - generic [ref=e241]:
+                      - img [ref=e242]
+                      - text: "3"
+                    - button "Adicionar aos favoritos" [ref=e247]:
+                      - img [ref=e248]
+                    - button "Adicionar" [ref=e251]:
+                      - img [ref=e252]
+                      - text: Adicionar
+                  - generic [ref=e256]:
+                    - generic [ref=e257]: Flores
+                    - heading "Buquê de Flores Artesanais" [level=3] [ref=e258]
+                  - paragraph [ref=e260]: Flores artesanais exclusivas
+                  - generic [ref=e263]: R$ 159,90
+              - link "Vinho Tinto Premium Oferta 5 Adicionar aos favoritos Adicionar Bebidas Vinho Tinto Premium Vinho tinto reserva R$ 289,90 R$ 349,90" [ref=e264] [cursor=pointer]:
+                - /url: /products/vinho-tinto-premium
+                - generic [ref=e265]:
+                  - generic [ref=e266]:
+                    - img "Vinho Tinto Premium" [ref=e267]
+                    - generic [ref=e268]: Oferta
+                    - generic [ref=e269]:
+                      - img [ref=e270]
+                      - text: "5"
+                    - button "Adicionar aos favoritos" [ref=e275]:
+                      - img [ref=e276]
+                    - button "Adicionar" [ref=e279]:
+                      - img [ref=e280]
+                      - text: Adicionar
+                  - generic [ref=e284]:
+                    - generic [ref=e285]: Bebidas
+                    - heading "Vinho Tinto Premium" [level=3] [ref=e286]
+                  - paragraph [ref=e288]: Vinho tinto reserva
+                  - generic [ref=e290]:
+                    - generic [ref=e291]: R$ 289,90
+                    - generic [ref=e292]: R$ 349,90
+              - link "Kit Spa Relaxante 3 Adicionar aos favoritos Adicionar Bem-estar Kit Spa Relaxante Kit completo de spa em casa R$ 199,90" [ref=e293] [cursor=pointer]:
+                - /url: /products/kit-spa-relaxante
+                - generic [ref=e294]:
+                  - generic [ref=e295]:
+                    - img "Kit Spa Relaxante" [ref=e296]
+                    - generic [ref=e297]:
+                      - img [ref=e298]
+                      - text: "3"
+                    - button "Adicionar aos favoritos" [ref=e303]:
+                      - img [ref=e304]
+                    - button "Adicionar" [ref=e307]:
+                      - img [ref=e308]
+                      - text: Adicionar
+                  - generic [ref=e312]:
+                    - generic [ref=e313]: Bem-estar
+                    - heading "Kit Spa Relaxante" [level=3] [ref=e314]
+                  - paragraph [ref=e316]: Kit completo de spa em casa
+                  - generic [ref=e319]: R$ 199,90
+              - link "Relógio Elegante Oferta 5 Adicionar aos favoritos Adicionar Acessórios Relógio Elegante Design clássico e elegante R$ 459,90 R$ 599,90" [ref=e320] [cursor=pointer]:
+                - /url: /products/relogio-elegante
+                - generic [ref=e321]:
+                  - generic [ref=e322]:
+                    - img "Relógio Elegante" [ref=e323]
+                    - generic [ref=e324]: Oferta
+                    - generic [ref=e325]:
+                      - img [ref=e326]
+                      - text: "5"
+                    - button "Adicionar aos favoritos" [ref=e331]:
+                      - img [ref=e332]
+                    - button "Adicionar" [ref=e335]:
+                      - img [ref=e336]
+                      - text: Adicionar
+                  - generic [ref=e340]:
+                    - generic [ref=e341]: Acessórios
+                    - heading "Relógio Elegante" [level=3] [ref=e342]
+                  - paragraph [ref=e344]: Design clássico e elegante
+                  - generic [ref=e346]:
+                    - generic [ref=e347]: R$ 459,90
+                    - generic [ref=e348]: R$ 599,90
+              - link "Caneca Personalizada 2 Adicionar aos favoritos Adicionar Presentes Personalizados Caneca Personalizada Caneca térmica personalizada R$ 79,90" [ref=e349] [cursor=pointer]:
+                - /url: /products/caneca-personalizada
+                - generic [ref=e350]:
+                  - generic [ref=e351]:
+                    - img "Caneca Personalizada" [ref=e352]
+                    - generic [ref=e353]:
+                      - img [ref=e354]
+                      - text: "2"
+                    - button "Adicionar aos favoritos" [ref=e359]:
+                      - img [ref=e360]
+                    - button "Adicionar" [ref=e363]:
+                      - img [ref=e364]
+                      - text: Adicionar
+                  - generic [ref=e368]:
+                    - generic [ref=e369]: Presentes Personalizados
+                    - heading "Caneca Personalizada" [level=3] [ref=e370]
+                  - paragraph [ref=e372]: Caneca térmica personalizada
+                  - generic [ref=e375]: R$ 79,90
+              - link "Almofada Decorativa Adicionar aos favoritos Adicionar Decoração Almofada Decorativa Conforto e estilo R$ 89,90" [ref=e376] [cursor=pointer]:
+                - /url: /products/almofada-decorativa
+                - generic [ref=e377]:
+                  - generic [ref=e378]:
+                    - img "Almofada Decorativa" [ref=e379]
+                    - button "Adicionar aos favoritos" [ref=e380]:
+                      - img [ref=e381]
+                    - button "Adicionar" [ref=e384]:
+                      - img [ref=e385]
+                      - text: Adicionar
+                  - generic [ref=e389]:
+                    - generic [ref=e390]: Decoração
+                    - heading "Almofada Decorativa" [level=3] [ref=e391]
+                  - paragraph [ref=e393]: Conforto e estilo
+                  - generic [ref=e396]: R$ 89,90
+              - link "Porta-joias Artesanal Adicionar aos favoritos Adicionar Decoração Porta-joias Artesanal Elegância e organização R$ 129,90" [ref=e397] [cursor=pointer]:
+                - /url: /products/porta-joias-artesanal
+                - generic [ref=e398]:
+                  - generic [ref=e399]:
+                    - img "Porta-joias Artesanal" [ref=e400]
+                    - button "Adicionar aos favoritos" [ref=e401]:
+                      - img [ref=e402]
+                    - button "Adicionar" [ref=e405]:
+                      - img [ref=e406]
+                      - text: Adicionar
+                  - generic [ref=e410]:
+                    - generic [ref=e411]: Decoração
+                    - heading "Porta-joias Artesanal" [level=3] [ref=e412]
+                  - paragraph [ref=e414]: Elegância e organização
+                  - generic [ref=e417]: R$ 129,90
+      - generic [ref=e421]:
+        - generic [ref=e422]:
+          - heading "Presentes por Ocasião" [level=2] [ref=e423]
+          - paragraph [ref=e424]: Encontre o presente perfeito para cada momento especial
+        - generic [ref=e425]:
+          - link "Dia dos Namorados Surpreenda quem você ama Ver presentes →" [ref=e426] [cursor=pointer]:
+            - /url: /products?occasion=love
+            - generic [ref=e428]:
+              - img [ref=e430]
+              - heading "Dia dos Namorados" [level=3] [ref=e432]
+              - paragraph [ref=e433]: Surpreenda quem você ama
+              - button "Ver presentes →" [ref=e434]
+          - link "Aniversário Celebre momentos especiais Ver presentes →" [ref=e435] [cursor=pointer]:
+            - /url: /products?occasion=birthday
+            - generic [ref=e437]:
+              - img [ref=e439]
+              - heading "Aniversário" [level=3] [ref=e443]
+              - paragraph [ref=e444]: Celebre momentos especiais
+              - button "Ver presentes →" [ref=e445]
+          - link "Casamento Presentes inesquecíveis Ver presentes →" [ref=e446] [cursor=pointer]:
+            - /url: /products?occasion=wedding
+            - generic [ref=e448]:
+              - img [ref=e450]
+              - heading "Casamento" [level=3] [ref=e452]
+              - paragraph [ref=e453]: Presentes inesquecíveis
+              - button "Ver presentes →" [ref=e454]
+          - link "Presentes Corporativos Para empresas e colaboradores Ver presentes →" [ref=e455] [cursor=pointer]:
+            - /url: /products?occasion=corporate
+            - generic [ref=e457]:
+              - img [ref=e459]
+              - heading "Presentes Corporativos" [level=3] [ref=e462]
+              - paragraph [ref=e463]: Para empresas e colaboradores
+              - button "Ver presentes →" [ref=e464]
+      - generic [ref=e466]:
+        - heading "Precisa de ajuda para escolher?" [level=2] [ref=e467]
+        - paragraph [ref=e468]: Nossa IA pode ajudar você a encontrar o presente perfeito
+        - generic [ref=e469]:
+          - link "Ver Recomendações" [ref=e470] [cursor=pointer]:
+            - /url: /recommendations
+          - link "Falar com Chat IA" [ref=e471] [cursor=pointer]:
+            - /url: /chat
+  - contentinfo [ref=e472]:
+    - generic [ref=e473]:
+      - generic [ref=e474]:
+        - generic [ref=e475]:
+          - generic [ref=e476]:
+            - generic [ref=e478]: R
+            - generic [ref=e479]: Regalaya
+          - paragraph [ref=e480]: Encontre o presente perfeito para cada ocasião
+          - generic [ref=e481]:
+            - link [ref=e482] [cursor=pointer]:
+              - /url: https://facebook.com
+              - img [ref=e483]
+            - link [ref=e489] [cursor=pointer]:
+              - /url: https://instagram.com
+              - img [ref=e490]
+        - generic [ref=e496]:
+          - heading "Links Rápidos" [level=4] [ref=e497]
+          - list [ref=e498]:
+            - listitem [ref=e499]:
+              - link "Produtos" [ref=e500] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=e501]:
+              - link "Categorias" [ref=e502] [cursor=pointer]:
+                - /url: /categories
+            - listitem [ref=e503]:
+              - link "Blog" [ref=e504] [cursor=pointer]:
+                - /url: /blog
+            - listitem [ref=e505]:
+              - link "Sobre Nós" [ref=e506] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e507]:
+              - link "Contato" [ref=e508] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e509]:
+          - heading "Atendimento" [level=4] [ref=e510]
+          - list [ref=e511]:
+            - listitem [ref=e512]:
+              - link "Perguntas Frequentes" [ref=e513] [cursor=pointer]:
+                - /url: /faq
+            - listitem [ref=e514]:
+              - link "Rastrear Pedido" [ref=e515] [cursor=pointer]:
+                - /url: /track
+            - listitem [ref=e516]:
+              - link "Termos de Uso" [ref=e517] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e518]:
+              - link "Política de Privacidade" [ref=e519] [cursor=pointer]:
+                - /url: /privacy
+        - generic [ref=e520]:
+          - heading "Newsletter" [level=4] [ref=e521]
+          - paragraph [ref=e522]: Receba novidades e ofertas exclusivas!
+          - generic [ref=e523]:
+            - textbox "Seu e-mail" [ref=e524]
+            - button "Inscrever" [ref=e525]
+          - generic [ref=e526]:
+            - generic [ref=e527]:
+              - img [ref=e528]
+              - generic [ref=e531]: contato@regalaya.com.br
+            - generic [ref=e532]:
+              - img [ref=e533]
+              - generic [ref=e535]: (11) 99999-9999
+            - generic [ref=e536]:
+              - img [ref=e537]
+              - generic [ref=e540]: São Paulo, SP
+      - generic [ref=e541]:
+        - paragraph [ref=e542]: © 2026 Regalaya. Todos os direitos reservados.
+        - paragraph [ref=e543]: "CNPJ: 00.000.000/0001-00 | Razão Social: Regalaya Ltda."
+  - region "Notifications (F8)":
+    - list
+  - button "Open Next.js Dev Tools" [ref=e549] [cursor=pointer]:
+    - img [ref=e550]
