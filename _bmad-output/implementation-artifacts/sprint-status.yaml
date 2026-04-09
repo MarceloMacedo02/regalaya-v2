@@ -108,7 +108,7 @@ development_status:
 
   # ÉPICO 10: Curadoria de Presentes com IA
   epic-10: in-progress
-  10-1-recomendacao-perfil: ready-for-dev
+  10-1-recomendacao-perfil: in-progress
   10-2-geracao-mensagem-personalizada: ready-for-dev
   10-3-rag-retrieval-augmented: ready-for-dev
   10-4-limite-uso-ia: ready-for-dev

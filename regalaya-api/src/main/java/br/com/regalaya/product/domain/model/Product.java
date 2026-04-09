@@ -50,6 +50,9 @@ public class Product extends BaseEntity {
     @Column(length = 2000)
     private String images;
 
+    @Column(length = 1000)
+    private String tags;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;

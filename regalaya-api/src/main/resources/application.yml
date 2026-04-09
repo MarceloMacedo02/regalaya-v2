@@ -2,6 +2,8 @@
 spring:
   application:
     name: regalaya-api
+  profiles:
+    active: dev
 
   main:
     allow-bean-definition-overriding: true
@@ -23,7 +25,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -83,12 +85,14 @@ logging:
   level:
     br.com.regalaya: DEBUG
     org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
     org.springframework.web: INFO
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
-# JWT Configuration
+# API & JWT Configuration
 app:
   jwt:
     secret: ${JWT_SECRET:23f2f431c5781cf694b0f6335816c132439498cc934542c0f236bf83f053a3480c43eee79baa419975977192ed01cc6cb1a55eec1cff20384dca17534941c3bd}
@@ -134,6 +138,15 @@ app:
     polling-batch-size: ${APP_NOTIFICATIONS_POLLING_BATCH_SIZE:50}
     account-notifications-path: ${APP_NOTIFICATIONS_ACCOUNT_PATH:/account/notifications}
 
+  # AI / OpenRouter Configuration
+  ai:
+    openrouter:
+      base-url: ${OPENROUTER_BASE_URL:https://openrouter.ai/api/v1}
+      api-key: ${OPENROUTER_API_KEY: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}
+      model: ${OPENROUTER_MODEL:nvidia/nemotron-3-nano-30b-a3b:free}
+      timeout: ${OPENAI_TIMEOUT:60s}
+      max-retries: ${OPENAI_MAX_RETRIES:3}
+
 # AWS / LocalStack Configuration
 cloud:
   aws:
@@ -175,3 +188,4 @@ resilience4j:
         retryExceptions:
           - java.io.IOException
           - java.util.concurrent.TimeoutException
+          - br.com.regalaya.payment.exception.PaymentProcessingException

@@ -34,6 +34,19 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("SELECT p FROM Product p WHERE p.isActive = true AND LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))")
     List<Product> findSuggestions(@Param("search") String search, Pageable pageable);
 
+    @Query("""
+        SELECT p FROM Product p 
+        LEFT JOIN p.category c
+        WHERE p.isActive = true AND (
+            LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%')) OR 
+            LOWER(p.description) LIKE LOWER(CONCAT('%', :term, '%')) OR 
+            LOWER(p.shortDescription) LIKE LOWER(CONCAT('%', :term, '%')) OR 
+            LOWER(p.tags) LIKE LOWER(CONCAT('%', :term, '%')) OR
+            LOWER(c.name) LIKE LOWER(CONCAT('%', :term, '%'))
+        )
+    """)
+    List<Product> findByKeyword(@Param("term") String term, Pageable pageable);
+
     @Query(value = """
         SELECT p.id, p.name, p.sku, SUM(oi.quantity) as units_sold, SUM(oi.total) as revenue
         FROM order_items oi

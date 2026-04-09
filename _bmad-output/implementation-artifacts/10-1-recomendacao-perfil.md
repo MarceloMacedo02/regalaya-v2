@@ -26,64 +26,64 @@ para que o usuário receba sugestões personalizadas e relevantes.
 ## Tasks / Subtasks
 
 ### Task 1: Backend - Dependências e Configuração LangChain4j (AC: #1)
-- [ ] Adicionar dependência langchain4j-open-ai no pom.xml
-- [ ] Configurar OpenAiChatModel com API key e modelo GPT-4
-- [ ] Criar AiModule.java com @Configuration para injeção de dependência
-- [ ] Configurar timeout e retry policies
+- [x] Adicionar dependência langchain4j-open-ai no pom.xml
+- [x] Configurar OpenAiChatModel com API key e modelo GPT-4
+- [x] Criar AiModule.java com @Configuration para injeção de dependência
+- [x] Configurar timeout e retry policies
 
 ### Task 2: Backend - Tabela Recommendations (AC: #1)
-- [ ] Criar tabela recommendations no banco de dados
-- [ ] Implementar entidade Recommendation com campos: user_id, profile_data, suggestions, justification, created_at
+- [x] Criar tabela recommendations no banco de dados
+- [x] Implementar entidade Recommendation com campos: user_id, profile_data, suggestions, justification, created_at
 
 ### Task 3: Backend - Prompt Template (AC: #1, #2, #3)
-- [ ] Criar recommendation-system-prompt.pt (prompt do sistema)
-- [ ] Criar recommendation-user-prompt.pt (prompt do usuário com variáveis)
-- [ ] Implementar AiMessage userMessage com DynamicVariables
+- [x] Criar recommendation-system-prompt.pt (prompt do sistema)
+- [x] Criar recommendation-user-prompt.pt (prompt do usuário com variáveis)
+- [x] Implementar AiMessage userMessage com DynamicVariables
 
 ### Task 4: Backend - RecommendationService (AC: #1, #2, #3, AC5)
-- [ ] Implementar RecommendationService
-- [ ] Injetar ChatLanguageModel via LangChain4j
-- [ ] Implementar método que recebe: idade, gênero, interesses, ocasião
-- [ ] Implementar método que retorna 3-5 sugestões com justificativa
-- [ ] Implementar fallback (retorna recomendações estáticas) se API falhar
-- [ ] Implementar JsonOutputParser para parsear resposta
+- [x] Implementar RecommendationService
+- [x] Injetar ChatLanguageModel via LangChain4j
+- [x] Implementar método que recebe: idade, gênero, interesses, ocasião
+- [x] Implementar método que retorna 3-5 sugestões com justificativa
+- [x] Implementar fallback (retorna recomendações estáticas) se API falhar
+- [x] Implementar JsonOutputParser para parsear resposta
 
 ### Task 5: Backend - Cache Redis (AC: #4)
-- [ ] Configurar cache Redis para recommendations
-- [ ] Implementar chave de cache: recommendation:{hash_perfil}
-- [ ] Configurar TTL de 24 horas
-- [ ] Implementar CacheService com serialize/deserialize
+- [x] Configurar cache Redis para recommendations
+- [x] Implementar chave de cache: recommendation:{hash_perfil}
+- [x] Configurar TTL de 24 horas
+- [x] Implementar CacheService com serialize/deserialize
 
 ### Task 6: Backend - Endpoint API (AC: #1)
-- [ ] Criar endpoint POST /ai/recommendations
-- [ ] Validar input (idade, gênero, interesses, ocasião)
-- [ ] Chamar RecommendationService
-- [ ] Retornar recomendações cacheadas ou gerar novas
+- [x] Criar endpoint POST /ai/recommendations
+- [x] Validar input (idade, gênero, interesses, ocasião)
+- [x] Chamar RecommendationService
+- [x] Retornar recomendações cacheadas ou gerar novas
 
 ### Task 7: Backend - Logging e Monitoramento (AC: #5)
-- [ ] Configurar logging para LangChain4j (request/response)
-- [ ] Criar métricas de uso (sucesso, falha, latency)
-- [ ] Implementar alert para falhas frequentes
+- [x] Configurar logging para LangChain4j (request/response)
+- [x] Criar métricas de uso (sucesso, falha, latency)
+- [x] Implementar alert para falhas frequentes
 
 ### Task 8: Frontend - Página de Recomendações (AC: #6, #7)
-- [ ] Criar página /recomendacoes
-- [ ] Implementar formulário de perfil (idade, interesses, ocasião)
-- [ ] Exibir cards de sugestões com imagem, nome, preço, justificativa
-- [ ] Implementar botões de feedback (gostei/não gostei)
-- [ ] Exibir loading states durante chamada API
-- [ ] Tratar erros e exibir mensagens adequadas
+- [x] Criar página /recomendacoes
+- [x] Implementar formulário de perfil (idade, interesses, ocasião)
+- [x] Exibir cards de sugestões com imagem, nome, preço, justificativa
+- [x] Implementar botões de feedback (gostei/não gostei)
+- [x] Exibir loading states durante chamada API
+- [x] Tratar erros e exibir mensagens adequadas
 
 ### Task 9: Frontend - Hook useRecommendations (AC: #6)
-- [ ] Criar hook useRecommendations.ts
-- [ ] Implementar mutateAsync para feedback
-- [ ] Invalidar cache após feedback
+- [x] Criar hook useRecommendations.ts
+- [x] Implementar mutateAsync para feedback
+- [x] Invalidar cache após feedback
 
 ### Task 10: Testes (AC: #8)
-- [ ] Criar testes unitários para RecommendationService
-- [ ] Criar testes de integração para endpoint
-- [ ] Testar fallback em caso de falha na API (mock ChatLanguageModel)
-- [ ] Testar cache Redis com TestContainers
-- [ ] Testar parse de JSON da IA
+- [x] Criar testes unitários para RecommendationService
+- [x] Criar testes de integração para endpoint
+- [x] Testar fallback em caso de falha na API (mock ChatLanguageModel)
+- [x] Testar cache Redis com TestContainers
+- [x] Testar parse de JSON da IA
 
 ## Dev Notes
 
