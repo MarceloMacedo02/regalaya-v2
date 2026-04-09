@@ -2,6 +2,7 @@ package br.com.regalaya.admin.repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,8 +47,8 @@ public interface CustomerProfileRepository extends JpaRepository<Order, UUID> {
     Page<CustomerOrderSummaryResponse> findCustomerOrders(
             @Param("customerId") UUID customerId,
             @Param("status") OrderStatus status,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
             @Param("productName") String productName,
             @Param("sortBy") String sortBy,
             @Param("sortDirection") String sortDirection,
@@ -74,8 +75,8 @@ public interface CustomerProfileRepository extends JpaRepository<Order, UUID> {
         """)
     List<Object[]> getMonthlyOrderData(
             @Param("userId") UUID userId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
     );
 
     long countByUserId(UUID userId);

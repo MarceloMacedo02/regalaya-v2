@@ -2,7 +2,7 @@
 
 Status: in-progress
 
-<!-- Nota: Validação é opcional. Execute validate-create-story para verificação de qualidade antes de dev-story. -->
+<!-- Nota: validação é opcional. Este arquivo foi reconciliado com o código real em 2026-04-08. -->
 
 ## Story
 
@@ -10,115 +10,145 @@ Como admin, quero enviar comunicações para clientes, para engajar e informar.
 
 ## Acceptance Criteria
 
-1. [x] Deve ser possível enviar comunicações via email e WhatsApp
-2. [x] Deve houver seletores: todos os clientes, por segmento, por filtros personalizados
-3. [x] Deve houver templates de mensagem pré-definidos
-4. [x] Deve ser possível agendar envio para data/hora específica
-5. [x] Deve houver rate limiting para WhatsApp (100 msg/24h por número)
-6. [x] O criador de campanhas deve ser intuitivo e passo a passo
-7. [x] O editor de templates deve permitir personalização visual
-8. [x] Deve houver preview da mensagem antes de enviar
-9. [x] O relatório de envio deve mostrar status de cada mensagem
-10. [x] Deve houver métricas de engajamento (taxa de abertura, cliques)
+1. [ ] O sistema já registra campanhas de email e WhatsApp, mas ainda não integra provedores reais de envio.
+2. [x] Há seleção por segmento e por filtros/customização de destinatários.
+3. [x] Há templates de mensagem pré-definidos com CRUD e versionamento básico.
+4. [x] É possível registrar campanha para envio imediato ou agendado.
+5. [x] Existe regra de rate limiting para WhatsApp no backend da campanha.
+6. [x] O criador de campanhas é wizard passo a passo.
+7. [ ] O editor existe, mas não é um editor visual drag-and-drop.
+8. [x] Há preview da mensagem/campanha antes de registrar.
+9. [x] Há relatório por mensagem com status persistido das entregas da campanha.
+10. [ ] Métricas de engajamento existem no modelo/resposta, mas ainda não há tracking real de abertura/clique.
 
 ## Tasks / Subtasks
 
-- [ ] Backend: Criar endpoint POST /admin/communications/send
-  - [ ] Implementar serviço de envio de email (SendGrid/AWS SES)
-  - [ ] Implementar serviço de envio de WhatsApp (WhatsApp Cloud API)
-  - [ ] Criar lógica de rate limiting para WhatsApp (100 msg/24h por número)
-  - [ ] Implementar agendamento de envio (Spring Scheduler)
-  - [ ] Criar sistema de templates de mensagem
-  - [ ] Implementar salvamento de campanhas
-- [ ] Backend: Implementar tipos de comunicação
-  - [ ] Email: suporte a HTML, imagens, personalização de variáveis
-  - [ ] WhatsApp: suporte a templates aprovados pela Meta
-  - [ ] Mensagens de texto e multimídia
-  - [ ] Webhook para status de entrega
-  - [ ] Logs completos de envio e tentativas
-- [ ] Backend: Implementar seletores de segmentação
-  - [ ] Selecionar todos os clientes
-  - [ ] Selecionar por segmento (VIP, Novo, Inativo)
-  - [ ] Selecionar por filtros personalizados (RFM, valor gasto, etc.)
-  - [ ] Selecionar por lista de IDs específicos
-  - [ ] Validar seleção para evitar envios indesejados
-- [ ] Frontend Admin: Criar criador de campanhas
-  - [ ] Implementar wizard passo a passo (4 passos)
-  - [ ] Passo 1: Seleção de clientes (seletores + filtros)
-  - [ ] Passo 2: Escolha de tipo de comunicação (email/WhatsApp)
-  - [ ] Passo 3: Seleção e edição de template
-  - [ ] Passo 4: Agendamento e confirmação
-  - [ ] Validação em cada passo com mensagens claras
-- [ ] Frontend Admin: Criar editor de templates
-  - [ ] Editor visual de email com drag-and-drop
-  - [ ] Variáveis placeholders personalização: {{nome}}, {{valor}}
-  - [ ] Preview em tempo real
-  - [ ] Salvar templates reutilizáveis
-  - [ ] Versionamento de templates
-  - [ ] Importação/exportação de templates
-- [ ] Frontend Admin: Implementar preview da mensagem
-  - [ ] Preview desktop e mobile para emails
-  - [ ] Preview do WhatsApp com template real
-  - [ ] Simulação de personalização de variáveis
-  - [ ] Contador de caracteres para WhatsApp
-  - [ ] Teste de envio para número de teste
-- [ ] Frontend Admin: Criar relatório de envio
+- [x] Backend: Criar endpoints de campanha
+  - [x] `POST /v1/admin/communications/send`
+  - [x] `GET /v1/admin/communications/campaigns`
+  - [x] `GET /v1/admin/communications/campaigns/{id}`
+  - [x] `DELETE /v1/admin/communications/campaigns/{id}`
+
+- [ ] Backend: Implementar envio real por canal
+  - [ ] Serviço real de envio de email (SES/SendGrid)
+  - [ ] Serviço real de envio de WhatsApp Cloud API
+  - [x] Regra de rate limiting por número para campanhas WhatsApp
+  - [ ] Scheduler de despacho assíncrono para campanhas agendadas
+  - [x] Persistência de campanhas e entregas
+
+- [ ] Backend: Implementar capacidades avançadas de canal
+  - [ ] Email com integração externa de HTML/imagens enviada de fato
+  - [ ] WhatsApp com templates aprovados pela Meta
+  - [ ] Mensagens multimídia reais
+  - [ ] Webhook de status de entrega
+  - [ ] Logs operacionais completos de tentativa/reenvio
+
+- [x] Backend: Seletores de segmentação
+  - [x] Selecionar todos os clientes
+  - [x] Selecionar por segmento (`ALL`, `VIP`, `NEW`, `INACTIVE`)
+  - [x] Selecionar por filtros personalizados
+  - [x] Selecionar por lista de IDs específicos
+  - [x] Validar segmento/template antes de registrar campanha
+
+- [x] Frontend Admin: Criar criador de campanhas
+  - [x] Wizard com 4 passos
+  - [x] Passo 1: seleção de clientes
+  - [x] Passo 2: tipo de comunicação
+  - [x] Passo 3: seleção de template
+  - [x] Passo 4: agendamento e confirmação
+  - [x] Validação por etapa
+  - [x] Salvar rascunho no `localStorage`
+
+- [ ] Frontend Admin: Editor de templates
+  - [ ] Editor visual drag-and-drop
+  - [x] Variáveis/placeholders editáveis
+  - [x] Preview em tempo real
+  - [x] Salvar templates reutilizáveis
+  - [x] Versionamento básico via incremento no backend
+  - [x] Importação/exportação de templates em JSON
+
+- [ ] Frontend Admin: Preview avançado da mensagem
+  - [ ] Preview desktop/mobile específico para email
+  - [ ] Preview de WhatsApp fiel ao template real do provedor
+  - [x] Simulação de personalização de variáveis
+  - [ ] Contador de caracteres específico para WhatsApp
+  - [ ] Envio de teste para número/email de teste
+
+- [ ] Frontend Admin: Relatório e operação
   - [ ] Dashboard em tempo real durante envio
-  - [ ] Status por mensagem: enviado, entregue, falha
-  - [ ] Métricas de engajamento: taxa de abertura, cliques
-  - [ ] Exportação de relatório completo (CSV)
-  - [ ] Notificações de falhas e retrial automático
+  - [x] Status por mensagem persistido
+  - [ ] Métricas reais de abertura/clique
+  - [ ] Exportação CSV do relatório
+  - [ ] Notificações automáticas de falha/retry
 
 ## Dev Notes
 
-- Relevância: Esta é uma ferramenta poderosa de marketing e relacionamento com clientes
-- Prioridade: Média, estratégica para engajamento de clientes
-- Integração: Deve integrar com serviços externos (SendGrid, WhatsApp API) e sistema de segmentação
-- Performance: O envio em massa deve ser assíncrono e com feedback em tempo real
+- O módulo está funcional como cadastro/orquestração de campanhas e templates, mas ainda não como plataforma completa de disparo externo.
+- O backend cria campanhas, resolve destinatários, persiste entregas e calcula `openRate`/`clickRate` a partir do estado persistido, porém sem webhook/tracking real esses valores ficam essencialmente estáticos.
+- O wizard está integrado com API real, mas usa contagens estimadas fixas em alguns passos do frontend em vez de consultar volume real de clientes elegíveis.
+- O arquivo anterior também referenciava `regalaya-admin/`, mas a implementação real está toda em `regalaya-web`.
 
 ### Project Structure Notes
 
-- Criar novo módulo de comunicação no admin separado
-- Seguir padrões de formulários wizards já existentes
-- Reutilizar componentes de seleção e filtros da listagem de clientes
-- Implementar sistema de notificações em tempo real com WebSocket
+- Backend real:
+  - `regalaya-api/src/main/java/br/com/regalaya/communication/controller/admin/CommunicationCampaignController.java`
+  - `regalaya-api/src/main/java/br/com/regalaya/communication/controller/admin/TemplateController.java`
+  - `regalaya-api/src/main/java/br/com/regalaya/communication/service/impl/CommunicationCampaignServiceImpl.java`
+  - `regalaya-api/src/main/java/br/com/regalaya/communication/service/impl/TemplateServiceImpl.java`
+  - `regalaya-api/src/main/java/br/com/regalaya/communication/domain/model/*`
+- Frontend real:
+  - `regalaya-web/src/app/admin/communications/campaigns/page.tsx`
+  - `regalaya-web/src/app/admin/communications/campaigns/new/page.tsx`
+  - `regalaya-web/src/app/admin/communications/campaigns/[id]/page.tsx`
+  - `regalaya-web/src/app/admin/communications/templates/page.tsx`
+  - `regalaya-web/src/components/admin/communications/*`
+  - `regalaya-web/src/hooks/useCampaignWizard.ts`
 
 ### References
 
-- [Source: _bmad-output/implementation-artifacts/CE.md#ÉPICO-08-Gestão-de-Clientes-Admin] - Requisitos de comunicação em massa
-- [Source: _bmad-output/implementation-artifacts/sprint-status.yaml#epic-8] - Status do épico e integração com outras histórias
-- [Source: _bmad/bmm/config.yaml] - Configuração do projeto e idioma
+- [CommunicationCampaignController.java](C:\projetos\parnaiba\presentes\regalaya01\regalaya-api\src\main\java\br\com\regalaya\communication\controller\admin\CommunicationCampaignController.java)
+- [CommunicationCampaignServiceImpl.java](C:\projetos\parnaiba\presentes\regalaya01\regalaya-api\src\main\java\br\com\regalaya\communication\service\impl\CommunicationCampaignServiceImpl.java)
+- [TemplateController.java](C:\projetos\parnaiba\presentes\regalaya01\regalaya-api\src\main\java\br\com\regalaya\communication\controller\admin\TemplateController.java)
+- [TemplateServiceImpl.java](C:\projetos\parnaiba\presentes\regalaya01\regalaya-api\src\main\java\br\com\regalaya\communication\service\impl\TemplateServiceImpl.java)
+- [CampaignWizard.tsx](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\components\admin\communications\CampaignWizard.tsx)
+- [TemplateStep.tsx](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\components\admin\communications\TemplateStep.tsx)
+- [page.tsx](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\app\admin\communications\campaigns\page.tsx)
+- [page.tsx](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\app\admin\communications\templates\page.tsx)
+- [useCampaignWizard.ts](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\hooks\useCampaignWizard.ts)
+- [CommunicationCampaignServiceImplTest.java](C:\projetos\parnaiba\presentes\regalaya01\regalaya-api\src\test\java\br\com\regalaya\communication\service\impl\CommunicationCampaignServiceImplTest.java)
 
 ## Dev Agent Record
 
 ### Agent Model Used
 
-Modelo de desenvolvimento BMad para criação de histórias completas
+Codex GPT-5
 
 ### Debug Log References
 
-- 2026-04-08: fluxo real de campanhas criado com persistência de campanhas/entregas, rate limiting de WhatsApp e páginas admin consumindo API em vez de mock.
+- 2026-04-08: documentação reconciliada com wizard real, CRUD de templates/campanhas e backend de persistência, mantendo em aberto integrações externas e tracking operacional.
 
 ### Completion Notes List
 
-- [ ] Requisitos de negócio traduzidos para critérios de aceitação
-- [ ] Contexto técnico completo fornecido ao desenvolvedor
-- [ ] Arquitetura e padrões de código documentados
-- [ ] Estrutura de arquivos e componentes definida
-- [ ] Requisitos de teste especificados
-- [ ] Integração com sistemas externos documentada
-- [ ] Requisitos de segurança e rate limiting especificados
+- [x] Estado real do módulo de campanhas verificado
+- [x] Diferença entre "registrar campanha" e "enviar via provedor real" documentada
+- [x] Caminhos corrigidos para `regalaya-web`
+- [ ] Integrações externas, scheduler e tracking ainda pendentes
 
 ### File List
 
-- Backend: `/regalaya-api/src/main/java/com/regalaya/controller/admin/CommunicationController.java`
-- Backend: `/regalaya-api/src/main/java/com/regalaya/service/admin/CommunicationService.java`
-- Backend: `/regalaya-api/src/main/java/com/regalaya/service/external/EmailService.java`
-- Backend: `/regalaya-api/src/main/java/com/regalaya/service/external/WhatsAppService.java`
-- Backend: `/regalaya-api/src/main/java/com/regalaya/repository/CommunicationRepository.java`
-- Frontend: `/regalaya-admin/src/components/admin/communications/CampaignWizard.tsx`
-- Frontend: `/regalaya-admin/src/components/admin/communications/TemplateEditor.tsx`
-- Frontend: `/regalaya-admin/src/components/admin/communications/CommunicationDashboard.tsx`
-- Frontend: `/regalaya-admin/src/pages/admin/communications/CommunicationPage.tsx`
-- Testes: `/regalaya-api/src/test/java/com/regalaya/controller/admin/CommunicationControllerTest.java`
-- Testes: `/regalaya-admin/src/test/admin/CommunicationWizard.test.tsx`
+- `regalaya-api/src/main/java/br/com/regalaya/communication/controller/admin/CommunicationCampaignController.java`
+- `regalaya-api/src/main/java/br/com/regalaya/communication/controller/admin/TemplateController.java`
+- `regalaya-api/src/main/java/br/com/regalaya/communication/service/impl/CommunicationCampaignServiceImpl.java`
+- `regalaya-api/src/main/java/br/com/regalaya/communication/service/impl/TemplateServiceImpl.java`
+- `regalaya-api/src/main/java/br/com/regalaya/communication/domain/model/CommunicationCampaign.java`
+- `regalaya-api/src/main/java/br/com/regalaya/communication/domain/model/CommunicationDelivery.java`
+- `regalaya-api/src/main/java/br/com/regalaya/communication/domain/model/CommunicationTemplate.java`
+- `regalaya-api/src/test/java/br/com/regalaya/communication/service/impl/CommunicationCampaignServiceImplTest.java`
+- `regalaya-web/src/app/admin/communications/campaigns/page.tsx`
+- `regalaya-web/src/app/admin/communications/campaigns/new/page.tsx`
+- `regalaya-web/src/app/admin/communications/campaigns/[id]/page.tsx`
+- `regalaya-web/src/app/admin/communications/templates/page.tsx`
+- `regalaya-web/src/components/admin/communications/CampaignWizard.tsx`
+- `regalaya-web/src/components/admin/communications/TemplateEditor.tsx`
+- `regalaya-web/src/components/admin/communications/TemplateStep.tsx`
+- `regalaya-web/src/hooks/useCampaignWizard.ts`

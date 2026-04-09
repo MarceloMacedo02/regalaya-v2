@@ -2,7 +2,7 @@
 
 Status: in-progress
 
-<!-- Nota: Validação é opcional. Execute validate-create-story para verificação de qualidade antes de dev-story. -->
+<!-- Nota: validação é opcional. Este arquivo foi reconciliado com o código real em 2026-04-08. -->
 
 ## Story
 
@@ -10,95 +10,107 @@ Como admin, quero visualizar todos os clientes, para conhecer minha base.
 
 ## Acceptance Criteria
 
-1. [x] A tabela deve exibir todos os clientes cadastrados no sistema
-2. [x] Os campos exibidos devem incluir: id, name, email, phone, total_orders, total_spent
-3. [x] Deve ser possível filtrar por status do cliente
-4. [x] Deve ser possível filtrar por data de cadastro
-5. [x] Deve ser possível filtrar por número de pedidos
-6. [x] A tabela deve ser responsiva e funcionar em diferentes tamanhos de tela
-7. [x] Deve houver busca por nome, email ou telefone
-8. [x] As colunas devem ser customizáveis (mostrar/esconder)
-9. [x] A paginação deve funcionar corretamente com pelo menos 50 registros por página
-10. [x] Os dados devem ser carregados em tempo real da API real (não mock)
+1. [x] A tabela exibe clientes cadastrados via API real.
+2. [x] Os campos exibidos incluem `id`, `name`, `email`, `phone`, `status`, `orderCount` e `totalSpent`.
+3. [x] É possível filtrar por status do cliente.
+4. [x] É possível filtrar por data de cadastro.
+5. [x] É possível filtrar por número de pedidos.
+6. [x] A tabela é responsiva e adapta colunas por breakpoint.
+7. [x] Há busca por nome, email ou telefone.
+8. [x] As colunas são customizáveis e persistidas localmente.
+9. [x] A paginação funciona com múltiplos tamanhos de página, incluindo 50 registros.
+10. [x] Os dados são carregados da API real, sem dependência de mock para esta tela.
 
 ## Tasks / Subtasks
 
-- [ ] Backend: Criar endpoint GET /admin/customers
-  - [ ] Implementar paginação (page, size)
-  - [ ] Implementar filtros: status, registration_date, orders_count
-  - [ ] Retornar campos: id, name, email, phone, total_orders, total_spent, created_at
-  - [ ] Implementar busca global (search parameter)
-  - [ ] Adicionar ordenação (por nome, data de cadastro, total gasto)
-- [ ] Frontend Admin: Criar tabela de clientes
-  - [ ] Implementar tabela responsiva com Tailwind CSS
-  - [ ] Adicionar filtros laterais (sidebar)
-  - [ ] Implementar campo de busca global
-  - [ ] Adicionar dropdown de ordenação
-  - [ ] Implementar paginação infinita ou tradicional
-  - [ ] Adicionar loading states durante carregamento
-  - [ ] Implementar skeleton loading
-- [ ] Frontend Admin: Implementar colunas customizáveis
-  - [ ] Criar modal de configuração de colunas
-  - [ ] Permitir mostrar/esconder colunas via checkboxes
-  - [ ] Salvar preferências do usuário no localStorage
-  - [ ] Restaurar configurações salvas
-- [ ] Remove Mock: Substituir dados mockados
-  - [ ] Remover todos os dados mock de clientes
-  - [ ] Garantir que todos os dados venham da API real
-  - [ Atualizar componentes existentes para usar dados reais
-- [ ] Testes: Implementar testes de busca e filtros
-  - [ ] Testar busca por nome, email, telefone
-  - [ ] Testar filtros por status, data, pedidos
-  - [ ] Testar paginação com diferentes quantidades
-  - [ ] Testar ordenação por diferentes campos
-  - [ ] Testar responsividade em mobile/tablet
+- [x] Backend: Criar endpoint `GET /v1/admin/customers`
+  - [x] Implementar paginação (`Pageable`)
+  - [x] Implementar filtros por `status`, `dateFrom`, `dateTo`, `minOrders`, `maxOrders`
+  - [x] Retornar `id`, `name`, `email`, `phone`, `status`, `registrationDate`, `orderCount`, `totalSpent`
+  - [x] Implementar busca global (`search`)
+  - [x] Expor endpoint de estatísticas em `GET /v1/admin/customers/stats`
+
+- [x] Frontend Admin: Criar tabela de clientes
+  - [x] Implementar tabela responsiva
+  - [x] Implementar filtros e busca com debounce
+  - [ ] Adicionar controle explícito de ordenação na UI
+  - [x] Implementar paginação tradicional
+  - [x] Adicionar loading state
+  - [x] Adicionar skeleton loading
+
+- [x] Frontend Admin: Implementar colunas customizáveis
+  - [x] Criar modal de configuração de colunas
+  - [x] Permitir mostrar/esconder colunas
+  - [x] Salvar preferências do usuário no `localStorage`
+  - [x] Restaurar configurações salvas
+
+- [x] Remove Mock: Substituir dados mockados
+  - [x] A página `/admin/customers` consome `customersService.getAll`
+  - [x] A página `/admin/customers` consome `customersService.getStats`
+  - [x] O fluxo desta tela não depende de `mock-data.ts`
+
+- [ ] Testes: consolidar cobertura do fluxo completo
+  - [x] Há testes unitários backend para `CustomerAdminServiceImpl`
+  - [ ] Faltam testes de controller cobrindo filtros/paginação
+  - [ ] Faltam testes frontend para busca, filtros e tabela
+  - [ ] Faltam testes de regressão para preferências de colunas
 
 ## Dev Notes
 
-- Relevância: Esta é uma funcionalidade crítica do backoffice administrativo que permite à equipe de gestão conhecer a base de clientes
-- Prioridade: Alta, pois é a primeira funcionalidade do módulo de gestão de clientes
-- Integração: Deve integrar com o módulo de autenticação para garantir que apenas admin acesse
-- Performance: A listagem deve ser rápida mesmo com milhares de clientes
+- A funcionalidade está implementada no código e consumindo API real.
+- O principal gap remanescente está em acabamento de ordenação no frontend e ampliação da cobertura de testes.
+- O arquivo anterior citava `regalaya-admin/`, mas a implementação real está em `regalaya-web/src/app/admin/...`.
 
 ### Project Structure Notes
 
-- Alinhamento com estrutura de projeto existente (admin pages em regalaya-admin/)
-- Seguir padrões de tabelas e filtros já implementados no admin
-- Usar componentes reutilizáveis de tabela e formulários
-- Manter consistência com o design system da aplicação
+- Backend real:
+  - `regalaya-api/src/main/java/br/com/regalaya/admin/controller/CustomerAdminController.java`
+  - `regalaya-api/src/main/java/br/com/regalaya/admin/services/CustomerAdminService.java`
+  - `regalaya-api/src/main/java/br/com/regalaya/admin/services/CustomerAdminServiceImpl.java`
+  - `regalaya-api/src/main/java/br/com/regalaya/admin/repository/CustomerAdminRepository.java`
+- Frontend real:
+  - `regalaya-web/src/app/admin/customers/page.tsx`
+  - `regalaya-web/src/components/admin/customers/CustomerTable.tsx`
+  - `regalaya-web/src/components/admin/customers/CustomerFilters.tsx`
+  - `regalaya-web/src/components/admin/customers/ColumnConfigModal.tsx`
+  - `regalaya-web/src/hooks/useCustomerPagination.ts`
 
 ### References
 
-- [Source: _bmad-output/implementation-artifacts/CE.md#ÉPICO-08-Gestão-de-Clientes-Admin] - Requisitos completos da funcionalidade
-- [Source: _bmad-output/implementation-artifacts/sprint-status.yaml#epic-8] - Status do épico e histórias relacionadas
-- [Source: _bmad/bmm/config.yaml] - Configuração do projeto e idioma
+- [CustomerAdminController.java](C:\projetos\parnaiba\presentes\regalaya01\regalaya-api\src\main\java\br\com\regalaya\admin\controller\CustomerAdminController.java)
+- [CustomerAdminServiceImpl.java](C:\projetos\parnaiba\presentes\regalaya01\regalaya-api\src\main\java\br\com\regalaya\admin\services\CustomerAdminServiceImpl.java)
+- [page.tsx](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\app\admin\customers\page.tsx)
+- [customers.service.ts](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\services\customers.service.ts)
+- [CustomerTable.tsx](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\components\admin\customers\CustomerTable.tsx)
+- [CustomerFilters.tsx](C:\projetos\parnaiba\presentes\regalaya01\regalaya-web\src\components\admin\customers\CustomerFilters.tsx)
+- [CustomerAdminServiceImplTest.java](C:\projetos\parnaiba\presentes\regalaya01\regalaya-api\src\test\java\br\com\regalaya\admin\services\CustomerAdminServiceImplTest.java)
 
 ## Dev Agent Record
 
 ### Agent Model Used
 
-Modelo de desenvolvimento BMad para criação de histórias completas
+Codex GPT-5
 
 ### Debug Log References
 
-- 2026-04-08: endpoint de listagem/admin stats alinhado com filtros reais, normalização de status e integração do frontend em `regalaya-web`.
+- 2026-04-08: documentação reconciliada com backend/frontend reais de clientes admin.
 
 ### Completion Notes List
 
-- [ ] Requisitos de negócio traduzidos para critérios de aceitação
-- [ ] Contexto técnico completo fornecido ao desenvolvedor
-- [ ] Arquitetura e padrões de código documentados
-- [ ] Estrutura de arquivos e componentes definida
-- [ ] Requisitos de teste especificados
-- [ ] Integração com sistemas existente documentada
+- [x] Estado real do código verificado
+- [x] Caminhos corrigidos para `regalaya-web`
+- [x] Checklist ajustado para refletir implementação real
+- [ ] Cobertura de testes do fluxo completo ainda incompleta
 
 ### File List
 
-- Backend: `/regalaya-api/src/main/java/com/regalaya/controller/admin/CustomerAdminController.java`
-- Backend: `/regalaya-api/src/main/java/com/regalaya/service/admin/CustomerAdminService.java`
-- Backend: `/regalaya-api/src/main/java/com/regalaya/repository/CustomerRepository.java`
-- Frontend: `/regalaya-admin/src/components/admin/customers/CustomerTable.tsx`
-- Frontend: `/regalaya-admin/src/components/admin/customers/CustomerFilters.tsx`
-- Frontend: `/regalaya-admin/src/pages/admin/customers/CustomerListPage.tsx`
-- Testes: `/regalaya-api/src/test/java/com/regalaya/controller/admin/CustomerAdminControllerTest.java`
-- Testes: `/regalaya-admin/src/test/admin/CustomerListPage.test.tsx`
+- `regalaya-api/src/main/java/br/com/regalaya/admin/controller/CustomerAdminController.java`
+- `regalaya-api/src/main/java/br/com/regalaya/admin/services/CustomerAdminService.java`
+- `regalaya-api/src/main/java/br/com/regalaya/admin/services/CustomerAdminServiceImpl.java`
+- `regalaya-api/src/main/java/br/com/regalaya/admin/repository/CustomerAdminRepository.java`
+- `regalaya-api/src/test/java/br/com/regalaya/admin/services/CustomerAdminServiceImplTest.java`
+- `regalaya-web/src/app/admin/customers/page.tsx`
+- `regalaya-web/src/components/admin/customers/CustomerTable.tsx`
+- `regalaya-web/src/components/admin/customers/CustomerFilters.tsx`
+- `regalaya-web/src/components/admin/customers/ColumnConfigModal.tsx`
+- `regalaya-web/src/hooks/useCustomerPagination.ts`

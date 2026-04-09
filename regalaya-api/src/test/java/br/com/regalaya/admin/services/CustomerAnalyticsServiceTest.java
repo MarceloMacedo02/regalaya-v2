@@ -10,6 +10,7 @@ import org.mockito.quality.Strictness;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -83,5 +84,26 @@ class CustomerAnalyticsServiceTest {
         assertNull(metrics.favoriteCategory());
         assertEquals("Regular", metrics.segment().segment());
         assertFalse(metrics.isActive());
+    }
+
+    @Test
+    void getChartData_AcceptsLocalDateTimeRowsFromRepository() {
+        LocalDate startDate = LocalDate.of(2026, 4, 1);
+        LocalDate endDate = LocalDate.of(2026, 4, 30);
+
+        when(customerProfileRepository.getMonthlyOrderData(
+                eq(userId),
+                eq(startDate.atStartOfDay()),
+                eq(endDate.atTime(java.time.LocalTime.MAX))
+        )).thenReturn(java.util.List.of(
+                new Object[]{LocalDateTime.of(2026, 4, 8, 10, 0), new BigDecimal("100.00")},
+                new Object[]{LocalDateTime.of(2026, 4, 15, 15, 30), new BigDecimal("50.00")}
+        ));
+
+        var chartData = customerAnalyticsService.getChartData(userId, startDate, endDate);
+
+        assertEquals(1, chartData.ltvEvolution().size());
+        assertEquals(new BigDecimal("150.00"), chartData.ltvEvolution().get(0).value());
+        assertEquals(2L, chartData.ltvEvolution().get(0).count());
     }
 }

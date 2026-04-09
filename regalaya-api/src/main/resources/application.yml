@@ -128,6 +128,11 @@ app:
       access-token: ${MERCADO_PAGO_ACCESS_TOKEN:TEST_placeholder}
       webhook-secret: ${MERCADO_PAGO_WEBHOOK_SECRET:placeholder}
       enabled: ${MERCADO_PAGO_ENABLED:false}
+  notifications:
+    default-timezone: ${APP_NOTIFICATIONS_DEFAULT_TIMEZONE:America/Fortaleza}
+    max-retries: ${APP_NOTIFICATIONS_MAX_RETRIES:3}
+    polling-batch-size: ${APP_NOTIFICATIONS_POLLING_BATCH_SIZE:50}
+    account-notifications-path: ${APP_NOTIFICATIONS_ACCOUNT_PATH:/account/notifications}
 
 # AWS / LocalStack Configuration
 cloud:

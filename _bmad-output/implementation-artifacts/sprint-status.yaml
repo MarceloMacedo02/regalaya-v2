@@ -25,7 +25,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-04-07T00:00:00.000Z
-last_updated: 2026-04-07T14:30:00.000Z
+last_updated: 2026-04-08T22:00:00.000Z
 project: regalaya01
 project_key: NOKEY
 tracking_system: file-system
@@ -91,7 +91,7 @@ development_status:
 
   # ÉPICO 08: Gestão de Clientes (Admin)
   epic-8: in-progress
-  08-1-listagem-clientes-admin: in-progress
+  08-1-listagem-clientes-admin: review
   08-2.1-perfil-cliente: review
   08-2.2-historico-pedidos-admin: review
   08-2.3-metricas-segmentacao: review
@@ -100,26 +100,26 @@ development_status:
   epic-8-retrospective: optional
 
   # ÉPICO 09: Notificações e Lembretes
-  epic-9: backlog
-  09-1-agendamento-notificacoes: backlog
-  09-2-envio-whatsapp: backlog
-  09-3-envio-email-transacional: backlog
+  epic-9: in-progress
+  09-1-agendamento-notificacoes: review
+  09-2-envio-whatsapp: review
+  09-3-envio-email-transacional: review
   epic-9-retrospective: optional
 
   # ÉPICO 10: Curadoria de Presentes com IA
-  epic-10: backlog
-  10-1-recomendacao-perfil: backlog
-  10-2-geracao-mensagem-personalizada: backlog
-  10-3-rag-retrieval-augmented: backlog
-  10-4-limite-uso-ia: backlog
+  epic-10: in-progress
+  10-1-recomendacao-perfil: ready-for-dev
+  10-2-geracao-mensagem-personalizada: ready-for-dev
+  10-3-rag-retrieval-augmented: ready-for-dev
+  10-4-limite-uso-ia: ready-for-dev
   epic-10-retrospective: optional
 
   # ÉPICO 11: Integração WhatsApp Bot
-  epic-11: backlog
-  11-1-menu-inicial-bot: backlog
-  11-2-cadastro-pessoa-whatsapp: backlog
-  11-3-sugestoes-whatsapp: backlog
-  11-4-agendamento-mensagem-whatsapp: backlog
+  epic-11: in-progress
+  11-1-menu-inicial-bot: ready-for-dev
+  11-2-cadastro-pessoa-whatsapp: ready-for-dev
+  11-3-sugestoes-whatsapp: ready-for-dev
+  11-4-agendamento-mensagem-whatsapp: ready-for-dev
   epic-11-retrospective: optional
 
   # ÉPICO 12: Dashboard e Analytics (Admin)

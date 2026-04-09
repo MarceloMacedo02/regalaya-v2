@@ -7,12 +7,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import br.com.regalaya.admin.dto.responses.ChartDataPoint;
 import br.com.regalaya.admin.dto.responses.CustomerChartDataResponse;
@@ -90,14 +93,14 @@ public class CustomerAnalyticsService {
             return 0;
         }
         long monthsBetween = ChronoUnit.MONTHS.between(firstPurchase, lastPurchase) + 1;
-        if (monthsBetween <= 0) return totalOrders;
+        if (monthsBetween <= 0) {
+            return totalOrders;
+        }
         double frequency = (double) totalOrders / monthsBetween;
         return (int) Math.round(frequency);
     }
 
     private Map<String, BigDecimal> calculateCategorySpending(UUID userId) {
-        // Category spending não está disponível pois OrderItem não tem relacionamento com Product/Category
-        // Retorna mapa vazio como fallback
         return Map.of();
     }
 
@@ -108,32 +111,33 @@ public class CustomerAnalyticsService {
             LocalDate startPeriod,
             LocalDate endPeriod
     ) {
-        List<Object[]> monthlyData = customerProfileRepository.getMonthlyOrderData(userId, startPeriod, endPeriod);
+        List<Object[]> monthlyData = customerProfileRepository.getMonthlyOrderData(
+                userId,
+                startPeriod.atStartOfDay(),
+                endPeriod.atTime(LocalTime.MAX)
+        );
 
-        // Agregar dados por mês
-        Map<java.time.YearMonth, BigDecimal> ltvByMonth = monthlyData.stream()
-                .collect(java.util.stream.Collectors.groupingBy(
-                        row -> java.time.YearMonth.from((LocalDate) row[0]),
-                        java.util.stream.Collectors.reducing(ZERO, row -> (BigDecimal) row[1], BigDecimal::add)
+        Map<YearMonth, BigDecimal> ltvByMonth = monthlyData.stream()
+                .collect(Collectors.groupingBy(
+                        row -> YearMonth.from(asLocalDateTime(row[0])),
+                        Collectors.reducing(ZERO, row -> (BigDecimal) row[1], BigDecimal::add)
                 ));
 
-        Map<java.time.YearMonth, Long> ordersByMonth = monthlyData.stream()
-                .collect(java.util.stream.Collectors.groupingBy(
-                        row -> java.time.YearMonth.from((LocalDate) row[0]),
-                        java.util.stream.Collectors.counting()
+        Map<YearMonth, Long> ordersByMonth = monthlyData.stream()
+                .collect(Collectors.groupingBy(
+                        row -> YearMonth.from(asLocalDateTime(row[0])),
+                        Collectors.counting()
                 ));
 
-        // Gerar LTV Evolution (cumulativo)
         List<YearMonth> monthsRange = generateYearMonthRange(
-                java.time.YearMonth.from(startPeriod),
-                java.time.YearMonth.from(endPeriod)
+                YearMonth.from(startPeriod),
+                YearMonth.from(endPeriod)
         );
 
         List<ChartDataPoint> ltvEvolution = monthsRange.stream()
                 .map(ym -> {
                     BigDecimal cumulative = ltvByMonth.entrySet().stream()
-                            .filter(e -> !e.getKey().isBefore(java.time.YearMonth.from(startPeriod)) &&
-                                         !e.getKey().isAfter(ym))
+                            .filter(e -> !e.getKey().isBefore(YearMonth.from(startPeriod)) && !e.getKey().isAfter(ym))
                             .map(Map.Entry::getValue)
                             .reduce(ZERO, BigDecimal::add);
                     return new ChartDataPoint(
@@ -144,7 +148,6 @@ public class CustomerAnalyticsService {
                 })
                 .toList();
 
-        // Purchase Frequency (barras)
         List<ChartDataPoint> purchaseFrequency = monthsRange.stream()
                 .map(ym -> new ChartDataPoint(
                         ym.toString(),
@@ -153,14 +156,12 @@ public class CustomerAnalyticsService {
                 ))
                 .toList();
 
-        // AOV Distribution - usar dados de categoria por enquanto
         List<ChartDataPoint> aovDistribution = List.of(
                 new ChartDataPoint("R$ 0-200", ZERO, 0L),
                 new ChartDataPoint("R$ 200-500", ZERO, 0L),
                 new ChartDataPoint("R$ 500+", ZERO, 0L)
         );
 
-        // Top Categories
         List<ChartDataPoint> topCategories = calculateTopCategories(userId);
 
         return new CustomerChartDataResponse(
@@ -168,21 +169,25 @@ public class CustomerAnalyticsService {
                 purchaseFrequency,
                 aovDistribution,
                 topCategories,
-                java.time.YearMonth.from(startPeriod),
-                java.time.YearMonth.from(endPeriod)
+                YearMonth.from(startPeriod),
+                YearMonth.from(endPeriod)
         );
     }
 
+    private LocalDateTime asLocalDateTime(Object value) {
+        if (value instanceof LocalDateTime localDateTime) {
+            return localDateTime;
+        }
+        if (value instanceof LocalDate localDate) {
+            return localDate.atStartOfDay();
+        }
+        throw new IllegalStateException("Unsupported date value for customer analytics: " + value);
+    }
+
     private List<ChartDataPoint> calculateTopCategories(UUID userId) {
-        // Category spending não está disponível pois OrderItem não tem relacionamento com Product/Category
-        // Retorna lista vazia como fallback
         return List.of();
     }
 
-    /**
-     * Gera uma lista de YearMonth entre start e end (inclusive).
-     * YearMonth não possui método datesUntil, então implementamos manualmente.
-     */
     private List<YearMonth> generateYearMonthRange(YearMonth start, YearMonth end) {
         List<YearMonth> result = new ArrayList<>();
         YearMonth current = start;

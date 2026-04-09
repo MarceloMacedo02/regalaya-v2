@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.UUID;
 
@@ -30,7 +32,7 @@ public class CustomerProfileService {
 
     public CustomerProfileResponse getCustomerProfile(UUID customerId) {
         User user = userRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new RuntimeException("Cliente nao encontrado"));
 
         var metrics = analyticsService.calculateMetrics(customerId);
 
@@ -58,7 +60,7 @@ public class CustomerProfileService {
             String sortDirection
     ) {
         if (!userRepository.existsById(customerId)) {
-            throw new RuntimeException("Cliente não encontrado");
+            throw new RuntimeException("Cliente nao encontrado");
         }
 
         Pageable pageable = PageRequest.of(page, size, org.springframework.data.domain.Sort.by(
@@ -69,8 +71,8 @@ public class CustomerProfileService {
         return customerProfileRepository.findCustomerOrders(
                 customerId,
                 parseStatus(filter.status()),
-                filter.startDate(),
-                filter.endDate(),
+                toStartOfDay(filter.startDate()),
+                toEndOfDay(filter.endDate()),
                 filter.productName(),
                 sortBy,
                 sortDirection,
@@ -79,11 +81,13 @@ public class CustomerProfileService {
     }
 
     private OrderStatus parseStatus(String status) {
-        if (status == null || status.isBlank()) return null;
+        if (status == null || status.isBlank()) {
+            return null;
+        }
         try {
             return OrderStatus.valueOf(status.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Status inválido: " + status);
+            throw new RuntimeException("Status invalido: " + status);
         }
     }
 
@@ -98,7 +102,7 @@ public class CustomerProfileService {
         var ordersPage = getCustomerOrders(customerId, filter, 0, 10000, sortBy, sortDirection);
 
         StringBuilder csv = new StringBuilder();
-        csv.append("ID,Order Number,Valor Total,Status,Método Pagamento,Data,Criado em,Itens\n");
+        csv.append("ID,Order Number,Valor Total,Status,Metodo Pagamento,Criado em,Itens\n");
 
         ordersPage.getContent().forEach(order -> {
             String line = String.join(",",
@@ -117,11 +121,21 @@ public class CustomerProfileService {
     }
 
     private String escapeCsv(String value) {
-        if (value == null) return "";
+        if (value == null) {
+            return "";
+        }
         if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
             return "\"" + value.replace("\"", "\"\"") + "\"";
         }
         return value;
+    }
+
+    private LocalDateTime toStartOfDay(LocalDate date) {
+        return date != null ? date.atStartOfDay() : null;
+    }
+
+    private LocalDateTime toEndOfDay(LocalDate date) {
+        return date != null ? date.atTime(LocalTime.MAX) : null;
     }
 
     public br.com.regalaya.admin.dto.responses.CustomerChartDataResponse getCustomerChartData(
@@ -130,12 +144,12 @@ public class CustomerProfileService {
             LocalDate endDate
     ) {
         if (!userRepository.existsById(customerId)) {
-            throw new RuntimeException("Cliente não encontrado");
+            throw new RuntimeException("Cliente nao encontrado");
         }
 
         long monthsDiff = java.time.temporal.ChronoUnit.MONTHS.between(startDate, endDate);
         if (monthsDiff > 24) {
-            throw new RuntimeException("Período máximo de análise é 24 meses");
+            throw new RuntimeException("Periodo maximo de analise e 24 meses");
         }
 
         return analyticsService.getChartData(customerId, startDate, endDate);

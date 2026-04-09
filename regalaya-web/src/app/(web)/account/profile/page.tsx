@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { User, Mail, Phone, Calendar, Save, Camera, Shield } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { NotificationPreferencesCard } from "@/components/account/preferences/NotificationPreferencesCard"
 
 export default function ProfilePage() {
   const { toast } = useToast()
@@ -160,19 +161,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="newsletter"
-                checked={formData.newsletter}
-                onChange={(e) => setFormData({ ...formData, newsletter: e.target.checked })}
-                disabled={!isEditing}
-                className="h-4 w-4"
-              />
-              <Label htmlFor="newsletter" className="cursor-pointer">
-                Receber newsletter com ofertas e novidades
-              </Label>
-            </div>
+            {/* Newsletter checkbox was moved to NotificationPreferencesCard */}
           </CardContent>
         </Card>
       </div>
@@ -228,6 +217,8 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      <NotificationPreferencesCard />
     </div>
   )
 }
