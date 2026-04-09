@@ -8,6 +8,7 @@ import br.com.regalaya.ai.service.RecommendationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import br.com.regalaya.auth.infrastructure.security.UserDetailsImpl;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,12 +26,10 @@ public class AIController {
 
     @PostMapping("/recommendations")
     public ResponseEntity<RecommendationResult> getRecommendations(
-            @AuthenticationPrincipal UUID userId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody ProfileInput input) {
         
-        // Em um caso real userId viria do SecurityContext via @AuthenticationPrincipal Jwt. 
-        // Se a app usar string/jwt claims:
-        if (userId == null) userId = UUID.randomUUID(); // Fallback para dev local test
+        UUID userId = (userDetails != null) ? userDetails.getId() : UUID.randomUUID();
 
         RecommendationResult result = recommendationService.recommend(userId, input);
         return ResponseEntity.ok(result);

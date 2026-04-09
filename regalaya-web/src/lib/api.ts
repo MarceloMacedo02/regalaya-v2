@@ -311,7 +311,7 @@ export async function apiFetch<T>(
     // Network errors
     throw {
       status: 0,
-      message: 'Erro de conexão. Verifique sua internet.',
+      message: 'Ops! Tivemos uma instabilidade momentânea na conexão. Por favor, verifique sua rede ou tente novamente em instantes.',
     } as ApiError
   }
 }

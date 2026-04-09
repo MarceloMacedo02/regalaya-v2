@@ -30,6 +30,7 @@ export interface ChatMessage {
   content: string
   timestamp: string
   suggestions?: string[]
+  products?: ProductRecommendation[]
 }
 
 export interface ChatConversation {

@@ -51,6 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         .orElseThrow(() -> new RuntimeException("User not found"));
 
                 if (user.getStatus() == null || !user.getStatus().equals("ACTIVE")) {
+                    // Aqui mantemos o bloqueio pois o usuário foi encontrado mas está inativo
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("{\"message\":\"User account is not active\"}");
                     return;
@@ -68,9 +69,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"message\":\"Invalid or expired token\"}");
-                return;
+                // Em vez de retornar 401, apenas limpamos o contexto e deixamos seguir.
+                // Se a rota for protegida, o Spring Security bloqueará adiante.
+                // Isso resolve o problema de rotas públicas bloqueadas por tokens expirados no browser.
+                SecurityContextHolder.clearContext();
+                logger.debug("Invalid or expired JWT token: " + e.getMessage());
             }
         }
 
@@ -78,6 +81,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private boolean shouldSkipFilter(String path) {
-        return path.startsWith("/api/v1/auth/");
+        // Removido o prefixo /api que não faz parte do servlet path se configurado como context-path
+        return path.startsWith("/v1/auth/") || 
+               path.startsWith("/v1/products/") || 
+               path.startsWith("/v1/ai/") ||
+               path.startsWith("/swagger-ui") ||
+               path.startsWith("/v3/api-docs");
     }
 }

@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   Clock,
   CheckCircle,
+  Sparkles,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -29,6 +30,7 @@ const navigation = [
   { name: "Meus Endereços", href: "/account/addresses", icon: MapPin },
   { name: "Meu Perfil", href: "/account/profile", icon: User },
   { name: "Lista de Desejos", href: "/account/wishlist", icon: Heart },
+  { name: "Recomendações IA", href: "/recommendations", icon: Sparkles },
 ]
 
 export default function AccountLayout({

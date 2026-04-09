@@ -201,6 +201,7 @@ export function MainNavItems() {
     { label: 'Páginas', key: 'pages', megaMenuColumns: pagesMegaMenuColumns },
     { label: 'Nossa História', href: '/about', key: 'story' },
     { label: 'Blog', href: '/blog', key: 'blog' },
+    { label: 'Recomendações IA', href: '/recommendations', key: 'recommendations' },
     { label: 'Contato', href: '/contact', key: 'contact' },
   ];
 

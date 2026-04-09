@@ -21,4 +21,6 @@ public class MessageRequest {
     private String produto;
     
     private String tom; // sentimental, formal, engraçado
+    
+    private String contexto; // A query original do usuário para mais personalização
 }

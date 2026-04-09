@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback, Fragment } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,9 +20,11 @@ import {
   ShoppingBag,
   Gift,
   PartyPopper,
-  TrendingUp
+  TrendingUp,
+  ExternalLink
 } from "lucide-react"
-import type { ChatMessage, ChatConversation } from "@/types/ai"
+import type { ChatMessage, ChatConversation, ProductRecommendation } from "@/types/ai"
+import { ProductCard } from "./product-card"
 
 // Quick suggestion buttons
 const QUICK_SUGGESTIONS = [
@@ -159,6 +161,7 @@ export function AIChat({
       role: "assistant",
       content: responses.message,
       suggestions: responses.suggestions,
+      products: responses.products,
     })
   }, [input, addMessage])
 
@@ -193,10 +196,41 @@ export function AIChat({
       }
     }
 
+    // Mock products for demonstration
+    const mockProducts: ProductRecommendation[] = [
+      {
+        productId: "p1",
+        reason: "Perfeito para a ocasião citada",
+        matchScore: 98,
+        product: {
+          id: "p1",
+          name: "Kit Spa Relaxante Premium",
+          price: 189.90,
+          images: ["/images/products/kit-spa.jpg"],
+          slug: "kit-spa-relaxante-premium",
+          category: { name: "Bem-estar" }
+        } as any
+      },
+      {
+        productId: "p2",
+        reason: "Um dos nossos itens mais vendidos",
+        matchScore: 95,
+        product: {
+          id: "p2",
+          name: "Vinho Tinto Reserva Especial",
+          price: 145.00,
+          images: ["/images/products/vinho.jpg"],
+          slug: "vinho-tinto-reserva",
+          category: { name: "Bebidas" }
+        } as any
+      }
+    ]
+
     // Default response
     return {
       message: "Entendi! Adoro ajudar a encontrar o presente perfeito. 🎁\n\nPara eu poder sugerir as melhores opções, me conta:\n1. **Para quem** é o presente?\n2. **Qual a ocasião**?\n3. **Qual o orçamento**?\n\nCom essas informações, posso fazer recomendações personalizadas!",
-      suggestions: QUICK_SUGGESTIONS.slice(0, 3).map(s => s.label)
+      suggestions: QUICK_SUGGESTIONS.slice(0, 3).map(s => s.label),
+      products: lowerInput.length > 5 ? mockProducts : undefined
     }
   }
 
@@ -311,9 +345,9 @@ export function AIChat({
       {/* Messages */}
       <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
         {getActiveMessages().map((message) => (
-          <div
-            key={message.id}
-            className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+          <Fragment key={message.id}>
+            <div
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
               className={`max-w-[80%] rounded-2xl px-4 py-2 ${
@@ -352,6 +386,34 @@ export function AIChat({
               )}
             </div>
           </div>
+
+          {/* Product Recommendations in Chat */}
+          {message.role === "assistant" && message.products && message.products.length > 0 && (
+            <div className="flex justify-start pl-10 -mt-2 mb-4">
+              <div className="flex gap-4 overflow-x-auto pb-2 max-w-full scrollbar-hide">
+                {message.products.map((rec) => (
+                  <div key={rec.productId} className="min-w-[200px] max-w-[220px]">
+                    <ProductCard 
+                      product={{
+                        ...rec.product,
+                        stock: 10,
+                        isActive: true
+                      } as any} 
+                      showFavoriteButton={false}
+                      showImageCount={false}
+                      className="scale-90 origin-top-left"
+                    />
+                    <div className="bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg mt-[-20px] relative z-10 border border-amber-100 dark:border-amber-900/30">
+                      <p className="text-[10px] text-amber-800 dark:text-amber-300 line-clamp-2 italic">
+                        "{rec.reason}"
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Fragment>
         ))}
         
         {/* Typing Indicator */}

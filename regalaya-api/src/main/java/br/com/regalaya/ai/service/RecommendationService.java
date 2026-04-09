@@ -5,6 +5,7 @@ import br.com.regalaya.ai.model.MessageRequest;
 import br.com.regalaya.ai.model.MessageResponse;
 import br.com.regalaya.ai.model.ProfileInput;
 import br.com.regalaya.ai.model.RecommendationResult;
+import br.com.regalaya.ai.model.RecommendationResult.Suggestion;
 import br.com.regalaya.ai.repository.RecommendationRepository;
 import br.com.regalaya.product.domain.model.Product;
 import br.com.regalaya.product.repository.ProductRepository;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -51,87 +53,126 @@ public class RecommendationService {
 
     public RecommendationResult recommend(UUID userId, ProfileInput input) {
         try {
-            // Load templates
-            String systemPromptStr = loadTemplate("classpath:prompts/recommendation-system-prompt.pt");
-            String userPromptStr = loadTemplate("classpath:prompts/recommendation-user-prompt.pt");
-
-            // 1. Extração pragmática usando chamada REST direta - Extraindo termos positivos e negativos
             log.info("Processando pedido: {}", input.getQuery());
-            String extractPrompt = "Analise o pedido e extraia: 1) Palavras-chave dos PRODUTOS e TEMAS desejados. 2) Termos que devem ser EXCLUÍDOS (filtros negativos). Responda APENAS os termos positivos separados por vírgula. Frase: " + input.getQuery();
-            String keywordsStr = callAiProvider("Você é um especialista em busca semântica. Retorne apenas os termos de busca positivos separados por vírgula.", extractPrompt);
+
+            // 1. Buscar TODOS os IDs de produtos ativos com estoque > 0 (ótimo para a IA filtrar)
+            List<UUID> allProductIds = productRepository.findAllActiveWithStockIds();
+            log.info("Total de produtos ativos com estoque: {}", allProductIds.size());
+
+            // Se não tiver produtos, retorna fallback
+            if (allProductIds.isEmpty()) {
+                log.warn("Nenhum produto ativo com estoque encontrado.");
+                return getFallbackRecommendations();
+            }
+
+            // 2. Buscar detalhes mínimos dos produtos (ID, Name, Description) - só os que têm estoque
+            List<Product> productsWithDetails = productRepository.findAllActiveWithStock();
+
+            // 3. Montar inventory reduzido para IA (sem imagens, sem preços - só ID, Name, Description)
+            StringBuilder inventoryBuilder = new StringBuilder();
+            for (Product p : productsWithDetails) {
+                String desc = p.getShortDescription() != null ? p.getShortDescription() :
+                             p.getDescription() != null ? p.getDescription() : "";
+                inventoryBuilder.append(p.getId().toString())
+                    .append(": ")
+                    .append(p.getName())
+                    .append(" - ")
+                    .append(desc.substring(0, Math.min(desc.length(), 100)))
+                    .append("\n");
+            }
+
+            // 4. Prompt para IA filtrar por ID
+            String userPrompt = String.format(
+                "Analise o pedido do cliente: \"%s\"\n\n" +
+                "Produtos disponíveis (ID: Nome - Descrição):\n%s\n\n" +
+                "INSTRUÇÕES:\n" +
+                "1. Selecione ATÉ 5 produtos que melhor atende ao pedido.\n" +
+                "2. Considere: nome, descrição, palavras-chave do pedido.\n" +
+                "3. Se o pedido contém restrições negativas (ex: 'sem vinho', 'não quero chocolate'), RESPECTE-AS.\n" +
+                "4. Retorne APENAS JSON: { \"selectedIds\": [\"id1\", \"id2\", ...], \"justificativas\": { \"id1\": \"justificativa\", ... } }",
+                input.getQuery(),
+                inventoryBuilder.toString()
+            );
+
+            String systemPrompt = "Você é um assistente de e-commerce especializado em sugerir presentes perfeitos. " +
+                "Analise as preferências do cliente e selecione os melhores produtos do catálogo.";
+
+            log.info("Enviando {} produtos para a IA analisar...", productsWithDetails.size());
+            String aiResponse = callAiProvider(systemPrompt, userPrompt);
+            log.info("Resposta da IA (seleção de IDs): {}", aiResponse);
+
+            // 5. Parse dos IDs selecionados pela IA
+            String cleanedResponse = aiResponse.replaceAll("```json", "").replaceAll("```", "").trim();
+            Map<String, Object> selection = objectMapper.readValue(cleanedResponse, Map.class);
             
-            log.info("Palavras-chave extraídas para o banco: {}", keywordsStr);
+            @SuppressWarnings("unchecked")
+            List<String> selectedIdsStr = (List<String>) selection.get("selectedIds");
+            @SuppressWarnings("unchecked")
+            Map<String, String> justifications = (Map<String, String>) selection.get("justificativas");
 
-            // 2. Busca dinâmica no banco (SQL Dinâmico via Repository) em múltiplos campos
-            List<Product> products = new ArrayList<>();
-            String[] terms = keywordsStr.split(",");
-            for (String kw : terms) {
-                String cleanKw = kw.trim();
-                if(!cleanKw.isBlank() && cleanKw.length() > 2) {
-                    log.info("Executando busca SQL para o termo: {}", cleanKw);
-                    products.addAll(productRepository.findByKeyword(cleanKw, PageRequest.of(0, 10)));
-                }
+            if (selectedIdsStr == null || selectedIdsStr.isEmpty()) {
+                log.warn("IA não retornou IDs selecionados. Usando fallback.");
+                return getFallbackRecommendations();
             }
 
-            // 3. Fallback: Se a busca específica não achar nada, traz gerais para a IA filtrar
-            if(products.isEmpty()) {
-                log.info("Nenhum produto encontrado na busca por palavras-chave. Usando fallback de ativos.");
-                products = productRepository.findByIsActiveTrue(PageRequest.of(0, 40)).getContent();
-            } else {
-                products = products.stream().distinct().toList();
-                log.info("Encontrados {} produtos únicos na base.", products.size());
+            // Converter IDs string para UUID
+            List<UUID> selectedIds = selectedIdsStr.stream()
+                .map(id -> {
+                    try { return UUID.fromString(id.trim()); }
+                    catch (Exception e) { return null; }
+                })
+                .filter(id -> id != null)
+                .toList();
+
+            log.info("IDs selecionados pela IA: {}", selectedIds);
+
+            // 6. Buscar produtos pelo ID com verificação de estoque e ativo (SEGURANÇA)
+            List<Product> filteredProducts = productRepository.findByIdInAndActiveWithStock(selectedIds);
+
+            // Se a IA retornou IDs mas nenhum está mais disponível em estoque, usar fallback
+            if (filteredProducts.isEmpty()) {
+                log.warn("Nenhum dos produtos selecionados pela IA está disponível em estoque. Usando fallback.");
+                return getFallbackRecommendations();
             }
 
-            // 4. Mapeamento Enriquecido (Enviando Detalhes, Tags e Descrição para a IA decidir melhor)
-            List<Map<String, Object>> inventoryList = products.stream()
+            // 7. Mapear para RecommendationResult
+            List<Suggestion> suggestions = filteredProducts.stream()
                 .map(p -> {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("id", p.getId().toString());
-                    map.put("slug", p.getSlug());
-                    map.put("name", p.getName());
-                    map.put("price", p.getPrice());
-                    map.put("description", p.getShortDescription() != null ? p.getShortDescription() : p.getDescription());
-                    map.put("tags", p.getTags());
-                    map.put("category", p.getCategory() != null ? p.getCategory().getName() : "");
-                    
+                    String justification = justifications.getOrDefault(p.getId().toString(), 
+                        "Uma excelente escolha baseada no seu pedido!");
+
                     String images = p.getImages();
                     String firstImage = "";
                     if (images != null && images.contains("\"")) {
-                        firstImage = images.split("\"")[1]; 
+                        firstImage = images.split("\"")[1];
                     } else if (images != null) {
                         firstImage = images;
                     }
-                    map.put("image", firstImage);
-                    return map;
+
+                    return Suggestion.builder()
+                        .nome(p.getName())
+                        .justificativa(justification)
+                        .preco("R$ " + p.getPrice().toString().replace('.', ','))
+                        .imagem(firstImage)
+                        .slug(p.getSlug())
+                        .id(p.getId().toString())
+                        .build();
                 }).toList();
-            
-            String inventoryJson = objectMapper.writeValueAsString(inventoryList);
 
-            // Replace values dynamically (LangChain4j syntax fallback)
-            String finalUserMessage = userPromptStr
-                .replace("{{inventory}}", inventoryJson).replace("{inventory}", inventoryJson)
-                .replace("{{query}}", input.getQuery()).replace("{query}", input.getQuery());
+            log.info("Total de sugestões retornadas: {}", suggestions.size());
+            RecommendationResult result = new RecommendationResult(suggestions);
 
-            log.info("PROMPT ENVIADO PARA IA:\n{}", finalUserMessage);
-
-            // 5. Chamada de recomendação oficial
-            String response = callAiProvider(systemPromptStr, finalUserMessage);
-            
-            log.info("RESULTADO DO PROMPT (IA):\n{}", response);
-            
-            response = response.replaceAll("```json", "").replaceAll("```", "").trim();
-            RecommendationResult result = objectMapper.readValue(response, RecommendationResult.class);
-
-            // 6. Filtro de Segurança (Last Line of Defense)
-            // Mesmo que a IA falhe ou retorne algo errado, filtramos termos proibidos explicitamente
-            if (input.getQuery().toLowerCase().contains("não quero") || input.getQuery().toLowerCase().contains("não inclua")) {
+            // 8. Filtro de Segurança adicional (Last Line of Defense)
+            if (input.getQuery().toLowerCase().contains("não") || 
+                input.getQuery().toLowerCase().contains("sem")) {
                 String queryLower = input.getQuery().toLowerCase();
                 List<RecommendationResult.Suggestion> filtered = result.getSugestoes().stream()
                     .filter(s -> {
-                        boolean forbidden = false;
-                        if (queryLower.contains("vinho") && (s.getNome().toLowerCase().contains("vinho") || s.getNome().toLowerCase().contains("champagne"))) forbidden = true;
-                        if (queryLower.contains("chocolate") && s.getNome().toLowerCase().contains("chocolate")) forbidden = true;
-                        return !forbidden;
+                        String nomeLower = s.getNome().toLowerCase();
+                        if (queryLower.contains("vinho") && (nomeLower.contains("vinho") || nomeLower.contains("champagne"))) return false;
+                        if (queryLower.contains("chocolate") && nomeLower.contains("chocolate")) return false;
+                        if (queryLower.contains("álcool") && nomeLower.contains("álcool")) return false;
+                        return true;
                     }).toList();
                 result.setSugestoes(filtered);
             }
@@ -145,31 +186,36 @@ public class RecommendationService {
             recommendationRepository.save(recommendation);
 
             return result;
+
         } catch (Exception e) {
-            log.error("Error generating recommendations via REST, returning fallback", e);
-            RecommendationResult fallback = getFallbackRecommendations();
-            
-            // Aplica filtro de segurança no fallback também!
-            if (input.getQuery().toLowerCase().contains("vinho") && (input.getQuery().toLowerCase().contains("não") || input.getQuery().toLowerCase().contains("sem"))) {
-                List<RecommendationResult.Suggestion> filtered = fallback.getSugestoes().stream()
-                    .filter(s -> !s.getNome().toLowerCase().contains("vinho") && !s.getNome().toLowerCase().contains("champagne"))
-                    .toList();
-                fallback.setSugestoes(filtered);
-            }
-            
-            return fallback;
+            log.error("Erro ao gerar recomendações, retornando fallback", e);
+            return getFallbackRecommendations();
         }
     }
 
     public MessageResponse generateMessage(MessageRequest request) {
         try {
-            String systemPrompt = "Você é um assistente criativo e empático da Regalaya, especializado em escrever mensagens de presente memoráveis.";
+            String systemPrompt = "Você é um mestre da escrita criativa e assistente pessoal de elite da Regalaya. " +
+                "Sua especialidade é criar dedicatórias e mensagens de presentes que tocam o coração, evitando clichês e generalismos. " +
+                "Você deve escrever a mensagem no MESMO IDIOMA em que o pedido foi feito (ex: se o pedido for em inglês, escreva em inglês).";
+            
             String userPrompt = String.format(
-                "Escreva uma mensagem de presente curta e carinhosa para uma pessoa que é meu/minha %s, na ocasião de %s. O presente é um %s. O tom deve ser %s.",
+                "Crie uma mensagem de presente EXTREMAMENTE personalizada.\n" +
+                "RELACIONAMENTO: %s\n" +
+                "OCASIÃO: %s\n" +
+                "PRODUTO: %s\n" +
+                "TOM DESEJADO: %s\n" +
+                "CONTEXTO ADICIONAL (Use para personalizar): %s\n\n" +
+                "REGRAS:\n" +
+                "1. Seja específico. Se o contexto diz que ela é arquiteta, use isso.\n" +
+                "2. NÃO use frases prontas como 'parabéns por essa data'.\n" +
+                "3. A mensagem deve ser curta (máx 3-4 frases) mas impactante.\n" +
+                "4. Mantenha o idioma do contexto fornecido.",
                 request.getRelacionamento(),
                 request.getOcasiao(),
                 request.getProduto(),
-                request.getTom() != null ? request.getTom() : "sentimental"
+                request.getTom() != null ? request.getTom() : "sentimental",
+                request.getContexto() != null ? request.getContexto() : "Nenhum contexto extra"
             );
 
             String mensagem = callAiProvider(systemPrompt, userPrompt);
@@ -240,8 +286,15 @@ public class RecommendationService {
     }
 
     private RecommendationResult getFallbackRecommendations() {
-        List<Product> topProducts = productRepository.findByIsActiveTrue(PageRequest.of(0, 3)).getContent();
-        List<RecommendationResult.Suggestion> suggestions = topProducts.stream().map(p -> {
+        // Buscar produtos ativos com estoque para fallback
+        List<Product> productsWithStock = productRepository.findAllActiveWithStock();
+        
+        // Se não tiver produtos com estoque, buscar qualquer ativo
+        if (productsWithStock.isEmpty()) {
+            productsWithStock = productRepository.findByIsActiveTrue(PageRequest.of(0, 3)).getContent();
+        }
+        
+        List<RecommendationResult.Suggestion> suggestions = productsWithStock.stream().map(p -> {
             String images = p.getImages();
             String firstImage = "";
             if (images != null && images.contains("\"")) {

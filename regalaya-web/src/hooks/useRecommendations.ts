@@ -23,6 +23,7 @@ export interface MessageRequest {
   relacionamento: string;
   produto: string;
   tom?: string;
+  contexto?: string;
 }
 
 export interface MessageResponse {

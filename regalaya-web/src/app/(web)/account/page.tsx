@@ -10,6 +10,7 @@ import {
   CheckCircle,
   Truck,
   CreditCard,
+  Sparkles,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -50,6 +51,7 @@ export default function AccountDashboard() {
     { label: "Pedidos Realizados", value: "12", icon: Package },
     { label: "Endereços Salvos", value: "3", icon: MapPin },
     { label: "Itens na Wishlist", value: "8", icon: Heart },
+    { label: "Sugestões para Você", value: "IA", icon: Sparkles },
   ]
 
   return (
@@ -196,6 +198,23 @@ export default function AccountDashboard() {
                   <p className="font-semibold">Lista de Desejos</p>
                   <p className="text-sm text-muted-foreground">
                     {8} itens salvos
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Link>
+        </Card>
+        <Card className="hover:shadow-md transition-shadow cursor-pointer bg-primary/5 border-primary/20">
+          <Link href="/recommendations">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold">Recomendações IA</p>
+                  <p className="text-sm text-muted-foreground">
+                    Encontre o presente perfeito
                   </p>
                 </div>
               </div>

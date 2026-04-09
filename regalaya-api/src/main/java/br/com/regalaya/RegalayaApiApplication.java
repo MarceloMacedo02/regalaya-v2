@@ -1,5 +1,7 @@
 package br.com.regalaya;
 
+import io.github.cdimascio.dotenv.Dotenv;
+import io.github.cdimascio.dotenv.DotenvEntry;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
@@ -13,6 +15,19 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class RegalayaApiApplication {
 
     public static void main(String[] args) {
+        // Load .env and set as system properties
+        try {
+            Dotenv dotenv = Dotenv.configure()
+                .ignoreIfMissing()
+                .load();
+            
+            for (DotenvEntry entry : dotenv.entries()) {
+                System.setProperty(entry.getKey(), entry.getValue());
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: .env file not loaded - " + e.getMessage());
+        }
+
         SpringApplication.run(RegalayaApiApplication.class, args);
     }
 }

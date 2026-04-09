@@ -159,6 +159,13 @@ export function Header() {
                 Blog
               </Link>
               <Link
+                href="/recommendations"
+                className="rounded-md px-3 py-2 text-sm font-medium text-[#be7374] bg-[#fed2cc]/30 hover:bg-[#fed2cc]/60"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Recomendações IA ✨
+              </Link>
+              <Link
                 href="/contact"
                 className="rounded-md px-3 py-2 text-sm font-medium text-[#788090] hover:bg-[#fed2cc]/60 hover:text-[#be7374]"
                 onClick={() => setIsMobileMenuOpen(false)}

@@ -28,6 +28,22 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     long countByIsActiveTrue();
 
+    // Buscar produtos ativos com estoque > 0 (para Recommendations)
+    @Query("SELECT p FROM Product p WHERE p.isActive = true AND p.stock > 0")
+    List<Product> findAllActiveWithStock();
+
+    // Buscar IDs de produtos ativos com estoque
+    @Query("SELECT p.id FROM Product p WHERE p.isActive = true AND p.stock > 0")
+    List<UUID> findAllActiveWithStockIds();
+
+    // Buscar por IDs com filtro de ativo e estoque
+    @Query("SELECT p FROM Product p WHERE p.id IN :ids AND p.isActive = true AND p.stock > 0")
+    List<Product> findByIdInAndActiveWithStock(@Param("ids") List<UUID> ids);
+
+    // Buscar por IDs (sem filtro de estoque, para fallback)
+    @Query("SELECT p FROM Product p WHERE p.id IN :ids")
+    List<Product> findByIdIn(@Param("ids") List<UUID> ids);
+
     @Query("SELECT p FROM Product p WHERE p.isActive = true AND (:search IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%')))")
     Page<Product> searchActive(@Param("search") String search, Pageable pageable);
 
