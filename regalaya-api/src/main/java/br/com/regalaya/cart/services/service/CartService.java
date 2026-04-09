@@ -21,4 +21,6 @@ public interface CartService {
     CartResponse applyCoupon(UUID userId, String couponCode);
 
     CartResponse removeCoupon(UUID userId);
+
+    CartResponse updateGiftInfo(UUID userId, String giftMessage, String senderName, String recipientName, String giftContext);
 }

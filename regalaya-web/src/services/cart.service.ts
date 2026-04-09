@@ -26,11 +26,16 @@ export interface Cart {
   total: number
   couponCode: string | null
   couponDiscount: number
+  giftMessage: string | null
+  senderName: string | null
+  recipientName: string | null
+  giftContext: string | null
 }
 
 export interface AddToCartRequest {
   productId: string
   quantity: number
+  giftMessage?: string
 }
 
 export interface UpdateCartItemRequest {
@@ -68,5 +73,9 @@ export const cartService = {
 
   async removeCoupon(): Promise<Cart> {
     return http.delete<Cart>('/cart/coupon')
+  },
+  
+  async updateGiftMessage(giftMessage: string | null, senderName?: string | null, recipientName?: string | null, giftContext?: string | null): Promise<Cart> {
+    return http.patch<Cart>('/cart/gift-message', { giftMessage, senderName, recipientName, giftContext })
   },
 }

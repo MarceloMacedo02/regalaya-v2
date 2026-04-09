@@ -11,5 +11,7 @@ public record AddToCartRequest(
 
     @NotNull(message = "Quantidade é obrigatória")
     @Min(value = 1, message = "Quantidade deve ser pelo menos 1")
-    Integer quantity
+    Integer quantity,
+
+    String giftMessage
 ) {}

@@ -10,9 +10,9 @@ import Cookies from 'js-cookie'
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1"
 
 /**
- * Timeout para requisições (em ms)
+ * Timeout para requisições (em ms) - 5 minutos para suportar processamento de IA
  */
-export const API_TIMEOUT = 30000
+export const API_TIMEOUT = 300000;
 
 /**
  * Internal type for retry logic (includes endpoint for reconstruction)

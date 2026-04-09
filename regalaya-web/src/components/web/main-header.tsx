@@ -30,11 +30,10 @@ export function MainHeader({
 }: MainHeaderProps) {
   const { logout, isAuthenticated } = useAuth();
   const router = useRouter();
-  const { itemCount: cartItemCount, subtotal: cartSubtotal } = useCart();
+  const { itemCount: cartItemCount, subtotal: cartSubtotal, isCartOpen, setIsCartOpen } = useCart();
   const { wishlistCount } = useWishlistContext();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -126,7 +125,7 @@ export function MainHeader({
 
             {/* Cart */}
             <button
-              onClick={() => setIsCartDrawerOpen(true)}
+              onClick={() => setIsCartOpen(true)}
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
             >
               <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-[#fed2cc]/60">
@@ -305,7 +304,7 @@ export function MainHeader({
         </div>
       </div>
 
-      <CartDrawer isOpen={isCartDrawerOpen} onClose={() => setIsCartDrawerOpen(false)} />
+      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </div>
   );
 }

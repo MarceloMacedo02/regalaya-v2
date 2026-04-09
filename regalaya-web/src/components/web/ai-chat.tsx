@@ -1,30 +1,87 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback, Fragment } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import ReactMarkdown from "react-markdown"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
-import { 
-  MessageCircle, 
-  Send, 
-  Mic, 
-  MicOff,
-  Loader2,
-  Sparkles,
-  User,
-  Bot,
-  X,
-  History,
-  Lightbulb,
-  ShoppingBag,
-  Gift,
-  PartyPopper,
-  TrendingUp,
-  ExternalLink
-} from "lucide-react"
+import { useRecommendations } from "@/hooks/useRecommendations"
+import { useCart } from "@/hooks/useCart"
 import type { ChatMessage, ChatConversation, ProductRecommendation } from "@/types/ai"
-import { ProductCard } from "./product-card"
+import { formatPrice } from "@/lib/utils"
+import { 
+  MessageCircle, Send, Mic, MicOff, Loader2, Sparkles,
+  User, Bot, X, History, ShoppingBag, Gift, PartyPopper, TrendingUp
+} from "lucide-react"
+import { http } from "@/lib/api"
+
+// ─── Helpers para busca de produtos no chat ──────────────────────────────────
+
+const STOP_WORDS = new Set([
+  'de','da','do','das','dos','para','com','sem','por','uma','um','que','em',
+  'no','na','quero','busco','preciso','gostaria','presente','presentes','ideia',
+  'ideias','seu','sua','meu','minha','bom','boa','tipo','algo','como','mais',
+  'ver','isso','essa','este','esta','tenho','procuro','vai','legal'
+])
+
+/** Extrai a keyword mais relevante da mensagem do usuário */
+function extractSearchQuery(message: string): string {
+  const words = message.toLowerCase()
+    .replace(/[^a-záàâãéèêíìîóòôõúùûç0-9 ]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length >= 3 && !STOP_WORDS.has(w))
+  
+  // Retorna as 2 primeiras palavras relevantes para melhor busca
+  return words.slice(0, 2).join(' ') || message.slice(0, 20)
+}
+
+/** Busca produtos no banco via search — stock > 0, sem IA, funciona agora */
+async function fetchProductsBySearch(query: string): Promise<ProductRecommendation[]> {
+  if (!query.trim()) return []
+  try {
+    // Tenta endpoint de tags primeiro (disponível após reinício do backend)
+    // Fallback para search geral que funciona sempre
+    const endpoints = [
+      `/ai/products-by-tag?q=${encodeURIComponent(query)}&size=6`,
+      `/products?search=${encodeURIComponent(query)}&size=6`
+    ]
+
+    for (const url of endpoints) {
+      try {
+        const res = await http.get<any>(url)
+        const data = res.data
+        // /products retorna { content: [...] }, /ai/products-by-tag retorna [...]
+        const items: any[] = Array.isArray(data) ? data : (data?.content ?? [])
+        if (items.length === 0) continue
+
+        return items
+          .filter(p => (p.stock ?? 1) >= 1)
+          .slice(0, 6)
+          .map(p => ({
+            productId: p.id,
+            reason: p.shortDescription || `Em estoque: ${p.name}`,
+            matchScore: 90,
+            product: {
+              id: p.id,
+              name: p.name,
+              price: typeof p.price === 'number' ? p.price : parseFloat(String(p.price || '0')),
+              images: Array.isArray(p.images) ? p.images : (p.images ? [p.images] : []),
+              slug: p.slug || '',
+            }
+          }))
+      } catch {
+        // tenta próximo endpoint
+      }
+    }
+    return []
+  } catch (e) {
+    console.error('Falha ao buscar produtos:', e)
+    return []
+  }
+}
 
 // Quick suggestion buttons
 const QUICK_SUGGESTIONS = [
@@ -53,6 +110,60 @@ function BriefcaseIcon(props: React.SVGProps<SVGSVGElement>) {
       <rect width="20" height="14" x="2" y="7" rx="2" ry="2" />
       <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
     </svg>
+  )
+}
+
+function ChatProductCard({ rec }: { rec: ProductRecommendation }) {
+  const { addItem } = useCart()
+  const firstImage = rec.product.images?.[0] || ""
+  const price = typeof rec.product.price === 'number' ? rec.product.price : 0
+
+  return (
+    <div className="flex-shrink-0 w-44 rounded-xl border border-zinc-200 bg-white shadow-sm overflow-hidden hover:shadow-md transition-shadow group">
+      {/* Image */}
+      <div className="relative h-32 w-full bg-zinc-100 overflow-hidden">
+        {firstImage ? (
+          <Image
+            src={firstImage}
+            alt={rec.product.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <Gift className="h-10 w-10 text-zinc-300" />
+          </div>
+        )}
+        {rec.matchScore && (
+          <span className="absolute top-1.5 right-1.5 bg-amber-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
+            {rec.matchScore}% match
+          </span>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="p-2.5 space-y-1.5">
+        <Link href={`/products/${rec.product.slug}`}>
+          <p className="text-xs font-semibold text-zinc-800 line-clamp-2 leading-snug hover:text-amber-600 transition-colors">
+            {rec.product.name}
+          </p>
+        </Link>
+        <p className="text-sm font-bold text-[#be7374]">{formatPrice(price)}</p>
+        {rec.reason && (
+          <p className="text-[9px] text-zinc-400 italic line-clamp-2 leading-relaxed">
+            "{rec.reason}"
+          </p>
+        )}
+        <button
+          onClick={() => addItem({ productId: rec.product.id, name: rec.product.name, price, quantity: 1, image: firstImage })}
+          className="w-full text-[10px] font-bold py-1.5 rounded-lg bg-[#be7374] text-white hover:bg-[#a85f60] active:scale-95 transition-all flex items-center justify-center gap-1 mt-1"
+        >
+          <ShoppingBag className="h-2.5 w-2.5" />
+          Adicionar
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -134,105 +245,61 @@ export function AIChat({
     return newMessage
   }, [activeConversationId])
 
+  const { chat } = useRecommendations()
+
   const handleSendMessage = useCallback(async () => {
     if (!input.trim()) return
 
     const userMessage = input.trim()
     setInput("")
 
-    // Add user message
     addMessage({
       role: "user",
       content: userMessage,
     })
 
-    // Simulate AI typing
+    const allMessages: { role: 'user' | 'assistant'; content: string }[] = getActiveMessages()
+      .filter(m => m.role === 'user' || m.role === 'assistant')
+      .slice(-10)
+      .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+
+    if (!allMessages.find(m => m.content === userMessage && m.role === 'user')) {
+      allMessages.push({ role: 'user', content: userMessage })
+    }
+
     setIsTyping(true)
     
-    // Simulate API response delay
-    await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000))
+    try {
+      // Busca em paralelo: resposta da IA + produtos no banco (direta, sempre funciona)
+      const searchQuery = extractSearchQuery(userMessage)
+      const [chatResponse, productsResponse] = await Promise.allSettled([
+        chat(allMessages),
+        fetchProductsBySearch(searchQuery)
+      ])
 
-    setIsTyping(false)
+      const aiReply = chatResponse.status === 'fulfilled'
+        ? chatResponse.value
+        : { message: 'Desculpe, ocorreu um erro. Tente novamente.', suggestions: [] }
 
-    // Generate response based on user input
-    const responses = generateAIResponse(userMessage)
-    
-    addMessage({
-      role: "assistant",
-      content: responses.message,
-      suggestions: responses.suggestions,
-      products: responses.products,
-    })
-  }, [input, addMessage])
+      const products = productsResponse.status === 'fulfilled' ? productsResponse.value : []
+      
+      addMessage({
+        role: "assistant",
+        content: aiReply.message,
+        suggestions: aiReply.suggestions,
+        products: products.length > 0 ? products : undefined,
+      })
+    } catch (err) {
+      console.error('Chat error:', err)
+      addMessage({
+        role: "assistant",
+        content: "Desculpe, ocorreu um erro. Tente novamente.",
+      })
+    } finally {
+      setIsTyping(false)
+    }
+  }, [input, addMessage, chat, getActiveMessages])
 
-  const generateAIResponse = (userInput: string) => {
-    const lowerInput = userInput.toLowerCase()
-    
-    if (lowerInput.includes("aniversário") || lowerInput.includes("birthday")) {
-      return {
-        message: "Para aniversário, temos várias opções incríveis! 🎂\n\n🎁 **Algumas ideias populares:**\n- Chocolates artesanais\n- Flores personalizadas\n- Kits de spa\n- Joias delicadas\n- Experiências como jantar romântico\n\nQual dessas categorias te interessou mais? Posso sugerir produtos específicos!",
-        suggestions: ["Chocolates", "Flores", "Kits spa", "Joias"]
-      }
-    }
-    
-    if (lowerInput.includes("namorad") || lowerInput.includes("romântico") || lowerInput.includes("amor")) {
-      return {
-        message: "Que lindo! Presentear quem amamos é especial. 💕\n\n❤️ **Mais populares para Dia dos Namorados:**\n- Perfumes importados\n- Joias (colares, anéis, pulseiras)\n- Rosas preservadas\n- Experiências (jantar, final de semana)\n- Caixas de chocolates gourmet\n\nQual é o estilo do seu parceiro(a)?",
-        suggestions: ["Perfumes", "Joias", "Rosas", "Experiências"]
-      }
-    }
-    
-    if (lowerInput.includes("corporativo") || lowerInput.includes("trabalho") || lowerInput.includes("colega")) {
-      return {
-        message: "Para presentes corporativos, temos opções elegantes! 👔\n\n💼 **Ideias profissionais:**\n- Canetas de luxo\n- Acessórios para escritório\n- Wines ou whiskys premium\n- Quadros decorativos\n- Kits de café gourmet\n\nQual é o contexto - segredo, amigo oculto, ou presente de empresa?",
-        suggestions: ["Canetas", "Acessórios", "Wines", "Kits café"]
-      }
-    }
-    
-    if (lowerInput.includes("mãe") || lowerInput.includes("pai") || lowerInput.includes("familia")) {
-      return {
-        message: "Presentear a família é sempre especial! 👨‍👩‍👧‍👦\n\n🏠 **Opções para familiares:**\n- Decoração para casa\n- Eletrodomésticos úteis\n- Roupas e acessórios\n- Livros ou cursos\n- Experiências em família\n\nPara quem é o presente? Posso ser mais específico!",
-        suggestions: ["Decoração", "Eletrodomésticos", "Roupas", "Experiências"]
-      }
-    }
-
-    // Mock products for demonstration
-    const mockProducts: ProductRecommendation[] = [
-      {
-        productId: "p1",
-        reason: "Perfeito para a ocasião citada",
-        matchScore: 98,
-        product: {
-          id: "p1",
-          name: "Kit Spa Relaxante Premium",
-          price: 189.90,
-          images: ["/images/products/kit-spa.jpg"],
-          slug: "kit-spa-relaxante-premium",
-          category: { name: "Bem-estar" }
-        } as any
-      },
-      {
-        productId: "p2",
-        reason: "Um dos nossos itens mais vendidos",
-        matchScore: 95,
-        product: {
-          id: "p2",
-          name: "Vinho Tinto Reserva Especial",
-          price: 145.00,
-          images: ["/images/products/vinho.jpg"],
-          slug: "vinho-tinto-reserva",
-          category: { name: "Bebidas" }
-        } as any
-      }
-    ]
-
-    // Default response
-    return {
-      message: "Entendi! Adoro ajudar a encontrar o presente perfeito. 🎁\n\nPara eu poder sugerir as melhores opções, me conta:\n1. **Para quem** é o presente?\n2. **Qual a ocasião**?\n3. **Qual o orçamento**?\n\nCom essas informações, posso fazer recomendações personalizadas!",
-      suggestions: QUICK_SUGGESTIONS.slice(0, 3).map(s => s.label),
-      products: lowerInput.length > 5 ? mockProducts : undefined
-    }
-  }
 
   const handleSuggestionClick = useCallback((suggestion: string) => {
     setInput(suggestion)
@@ -346,74 +413,50 @@ export function AIChat({
       <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
         {getActiveMessages().map((message) => (
           <Fragment key={message.id}>
-            <div
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+            <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`max-w-[82%] rounded-2xl px-4 py-2.5 ${
                 message.role === "user"
                   ? "bg-amber-500 text-white rounded-br-sm"
                   : "bg-zinc-100 dark:bg-zinc-800 rounded-bl-sm"
-              }`}
-            >
-              <div className="flex items-start gap-2">
-                {message.role === "assistant" && (
-                  <Bot className="h-5 w-5 mt-0.5 text-amber-600 flex-shrink-0" />
+              }`}>
+                <div className="flex items-start gap-2">
+                  {message.role === "assistant" && <Bot className="h-5 w-5 mt-1 text-amber-600 flex-shrink-0" />}
+                  {message.role === "user" && <User className="h-5 w-5 mt-1 text-white flex-shrink-0" />}
+                  <div className={`text-sm leading-relaxed ${message.role === "user" ? "text-white" : "text-zinc-800"} [&_strong]:font-bold [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1 [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:my-1 [&_li]:my-0.5 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_p]:my-1`}>
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
+                </div>
+                {message.suggestions && message.suggestions.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5 ml-7">
+                    {message.suggestions.map((suggestion, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
                 )}
-                {message.role === "user" && (
-                  <User className="h-5 w-5 mt-0.5 text-white flex-shrink-0" />
-                )}
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               </div>
-              
-              {/* Suggestions */}
-              {message.suggestions && message.suggestions.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {message.suggestions.map((suggestion, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className={`text-xs px-3 py-1 rounded-full transition-colors ${
-                        message.role === "user"
-                          ? "bg-white/20 text-white hover:bg-white/30"
-                          : "bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300"
-                      }`}
-                    >
-                      {suggestion}
-                    </button>
+            </div>
+
+            {/* Product Cards — every assistant message that has products (always, to drive sales) */}
+            {message.role === "assistant" && message.products && message.products.length > 0 && (
+              <div className="ml-8 mt-1">
+                <p className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-amber-500" />
+                  Presentes em estoque • escolha e adicione ao carrinho
+                </p>
+                <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
+                  {message.products.map((rec) => (
+                    <ChatProductCard key={rec.productId} rec={rec} />
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Product Recommendations in Chat */}
-          {message.role === "assistant" && message.products && message.products.length > 0 && (
-            <div className="flex justify-start pl-10 -mt-2 mb-4">
-              <div className="flex gap-4 overflow-x-auto pb-2 max-w-full scrollbar-hide">
-                {message.products.map((rec) => (
-                  <div key={rec.productId} className="min-w-[200px] max-w-[220px]">
-                    <ProductCard 
-                      product={{
-                        ...rec.product,
-                        stock: 10,
-                        isActive: true
-                      } as any} 
-                      showFavoriteButton={false}
-                      showImageCount={false}
-                      className="scale-90 origin-top-left"
-                    />
-                    <div className="bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg mt-[-20px] relative z-10 border border-amber-100 dark:border-amber-900/30">
-                      <p className="text-[10px] text-amber-800 dark:text-amber-300 line-clamp-2 italic">
-                        "{rec.reason}"
-                      </p>
-                    </div>
-                  </div>
-                ))}
               </div>
-            </div>
-          )}
-        </Fragment>
+            )}
+          </Fragment>
         ))}
         
         {/* Typing Indicator */}

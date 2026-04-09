@@ -123,9 +123,9 @@ public class CartServiceImpl implements CartService {
         CartItem item = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId)
                 .orElseThrow(() -> new CartItemNotFoundException("Item não encontrado no carrinho"));
 
+        cart.getItems().remove(item);
         cartItemRepository.delete(item);
 
-        cart = cartRepository.findByUserIdWithItems(userId).orElse(cart);
         return toCartResponse(cart);
     }
 
@@ -174,6 +174,19 @@ public class CartServiceImpl implements CartService {
         return toCartResponse(cart);
     }
 
+    @Override
+    @Transactional
+    public CartResponse updateGiftInfo(UUID userId, String giftMessage, String senderName, String recipientName, String giftContext) {
+        log.info("Updating gift info for user: {}", userId);
+        Cart cart = getOrCreateCart(userId);
+        cart.setGiftMessage(giftMessage);
+        cart.setSenderName(senderName);
+        cart.setRecipientName(recipientName);
+        cart.setGiftContext(giftContext);
+        cartRepository.save(cart);
+        return toCartResponse(cart);
+    }
+
     private Cart getOrCreateCart(UUID userId) {
         return cartRepository.findByUserIdWithItems(userId)
                 .orElseGet(() -> {
@@ -214,7 +227,11 @@ public class CartServiceImpl implements CartService {
                 couponDiscount,
                 total,
                 cart.getCouponCode(),
-                couponDiscount
+                couponDiscount,
+                cart.getGiftMessage(),
+                cart.getSenderName(),
+                cart.getRecipientName(),
+                cart.getGiftContext()
         );
     }
 }

@@ -2,17 +2,38 @@
 
 import React, { useState } from 'react';
 import { useRecommendations, ProfileInput } from '@/hooks/useRecommendations';
-import { ThumbsUp, ThumbsDown, Sparkles, Loader2, Gift, ShoppingCart, MessageCircle, History, Copy } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Sparkles, Loader2, Gift, ShoppingCart, MessageCircle, History, Copy, Heart, Sparkle, PartyPopper, Rose, Stars } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 
+interface SugestaoMensagem {
+  id: string;
+  texto: string;
+  categoria: string;
+  icon: React.ReactNode;
+}
+
+const mensagensSugeridas: SugestaoMensagem[] = [
+  { id: '1', texto: "Que esta data especial seja marcada por muita alegria e momentos inesquecíveis. Este presente é uma pequena muestra do quanto você significa para mim!", categoria: "Aniversário", icon: <PartyPopper className="w-4 h-4" /> },
+  { id: '2', texto: "Parabéns pelo seu dia! Que você收到toda a felicidade do mundo. Sou grato(a) por ter você na minha vida.", categoria: "Aniversário", icon: <Sparkle className="w-4 h-4" /> },
+  { id: '3', texto: "Feliz Natal! Que esta época traga muita paz, amor e alegria para você e sua família. Com todo o meu carinho.", categoria: "Natal", icon: <Stars className="w-4 h-4" /> },
+  { id: '4', texto: "Neste Natal, desejo que você receba toda a magia e beleza desta data. Te amo!", categoria: "Natal", icon: <Gift className="w-4 h-4" /> },
+  { id: '5', texto: "Você é a pessoa mais especial da minha vida. Gratidão por existir e por fazer parte da minha história.", categoria: "Declaração", icon: <Heart className="w-4 h-4" /> },
+  { id: '6', texto: "Obrigado(a) por tudo que você faz. Este presente é só um pequeno gesto de gratidão.", categoria: "Agradecimento", icon: <Rose className="w-4 h-4" /> },
+  { id: '7', texto: "Você faz meus dias mais iluminados. Gratidão por cada momento ao seu lado.", categoria: "Romântico", icon: <Heart className="w-4 h-4" /> },
+  { id: '8', texto: "Parabéns pela conquista! Você merece todo o sucesso do mundo.", categoria: "Conquistas", icon: <Sparkle className="w-4 h-4" /> },
+];
+
 export default function RecommendationsPage() {
   const { toast } = useToast();
-  const { addItem } = useCart();
+  const { addItem, setIsCartOpen, updateGiftMessage } = useCart();
   const { getRecommendations, generateMessage, submitFeedback, result, loading, msgLoading, error } = useRecommendations();
   const [formData, setFormData] = useState<ProfileInput>({ query: '' });
   const [generatedMessages, setGeneratedMessages] = useState<Record<number, string>>({});
+  const [selectedMessage, setSelectedMessage] = useState<string>('');
+  const [showMessagePicker, setShowMessagePicker] = useState(false);
+  const [lastAddedProduct, setLastAddedProduct] = useState<any>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +43,6 @@ export default function RecommendationsPage() {
   };
 
   const handleGenerateMessage = async (idx: number, produto: string) => {
-    // Tenta extrair informações da query
     const ocasiao = formData.query.toLowerCase().includes('aniversário') ? 'Aniversário' : 
                    formData.query.toLowerCase().includes('natal') ? 'Natal' : 'Ocasião Especial';
     const relacionamento = formData.query.toLowerCase().includes('amigo') ? 'Amigo' : 
@@ -32,15 +52,14 @@ export default function RecommendationsPage() {
       ocasiao,
       relacionamento,
       produto,
-      tom: 'sentimental',
-      contexto: formData.query // Passar o contexto original para personalização profunda
+      tom: 'emocional',
+      contexto: formData.query
     });
     setGeneratedMessages(prev => ({ ...prev, [idx]: msg }));
   };
 
-  const handleAddToCart = async (sugestao: any) => {
+  const handleAddToCart = async (sugestao: any, message?: string) => {
     try {
-      // Remover formatação de preço para pegar o número
       const priceValue = parseFloat(sugestao.preco.replace('R$ ', '').replace(',', '.'));
       
       await addItem({
@@ -50,10 +69,15 @@ export default function RecommendationsPage() {
         quantity: 1,
         image: sugestao.imagem
       });
+
+      setLastAddedProduct(sugestao);
+      setSelectedMessage('');
+      setShowMessagePicker(true);
+      setIsCartOpen(false);
       
       toast({
-        title: "Adicionado ao carrinho!",
-        description: `${sugestao.nome} foi adicionado com sucesso.`,
+        title: "✨ Excelente escolha!",
+        description: `${sugestao.nome} foi adicionado ao carrinho. Agora personalize sua dedicatória!`,
       });
     } catch (err) {
       toast({
@@ -62,6 +86,14 @@ export default function RecommendationsPage() {
         variant: "destructive"
       });
     }
+  };
+
+  const handleConfirmWithMessage = async () => {
+    if (selectedMessage) {
+      await updateGiftMessage(selectedMessage);
+    }
+    setShowMessagePicker(false);
+    setIsCartOpen(true);
   };
 
   const copyToClipboard = (text: string) => {
@@ -139,7 +171,6 @@ export default function RecommendationsPage() {
               <div className="space-y-6">
                 <div className="flex justify-between items-center border-b pb-4">
                   <h2 className="text-2xl font-bold text-gray-800">Achamos estas opções reais no estoque:</h2>
-                  {/* HU-10.3 Indicator */}
                   <div className="flex items-center text-xs font-bold text-pink-500 bg-pink-50 px-3 py-1 rounded-full border border-pink-100">
                     <History className="w-3 h-3 mr-1" /> Baseado no seu histórico
                   </div>
@@ -237,6 +268,89 @@ export default function RecommendationsPage() {
             )}
           </div>
         </div>
+
+        {/* Message Picker Modal */}
+        {showMessagePicker && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden">
+              <div className="p-6 border-b border-gray-100">
+                <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                  <Sparkles className="w-5 h-5 mr-2 text-pink-500" />
+                  Personalize sua Dedicatória
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Esta mensagem será enviada automaticamente via WhatsApp na data de entrega.
+                </p>
+              </div>
+              
+              <div className="p-6 overflow-y-auto max-h-[50vh]">
+                <div className="grid gap-3">
+                  {mensagensSugeridas.map((msg) => (
+                    <button
+                      key={msg.id}
+                      onClick={() => setSelectedMessage(msg.texto)}
+                      className={`p-4 rounded-xl text-left transition-all border-2 ${
+                        selectedMessage === msg.texto 
+                          ? 'border-pink-500 bg-pink-50' 
+                          : 'border-gray-100 hover:border-pink-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className={`mt-0.5 ${selectedMessage === msg.texto ? 'text-pink-500' : 'text-gray-400'}`}>
+                          {msg.icon}
+                        </span>
+                        <div className="flex-1">
+                          <span className="text-xs font-medium text-pink-600 bg-pink-100 px-2 py-0.5 rounded-full">
+                            {msg.categoria}
+                          </span>
+                          <p className="text-sm text-gray-700 mt-2 italic">"{msg.texto}"</p>
+                        </div>
+                        {selectedMessage === msg.texto && (
+                          <span className="text-pink-500">
+                            <Sparkles className="w-5 h-5" />
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-4">
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    Ou crie sua própria mensagem:
+                  </label>
+                  <textarea
+                    value={selectedMessage}
+                    onChange={(e) => setSelectedMessage(e.target.value)}
+                    placeholder="Digite sua dedicatória personalizada..."
+                    className="w-full border-2 border-gray-200 rounded-xl p-3 text-sm focus:border-pink-500 focus:ring-pink-500 transition-all"
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-gray-100 bg-gray-50 flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowMessagePicker(false);
+                    setSelectedMessage('');
+                  }}
+                  className="flex-1 py-3 px-4 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-100 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmWithMessage}
+                  disabled={!selectedMessage}
+                  className="flex-1 py-3 px-4 bg-pink-600 text-white font-bold rounded-xl hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Confirmar com Mensagem
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

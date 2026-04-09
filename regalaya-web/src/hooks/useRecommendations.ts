@@ -30,26 +30,44 @@ export interface MessageResponse {
   mensagem: string;
 }
 
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatRequest {
+  messages: ChatMessage[];
+}
+
+export interface ChatResponse {
+  message: string;
+  suggestions?: string[];
+}
+
 export function useRecommendations() {
   const [loading, setLoading] = useState(false);
   const [msgLoading, setMsgLoading] = useState(false);
+  const [chatLoading, setChatLoading] = useState(false);
   const [result, setResult] = useState<RecommendationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const getRecommendations = async (input: ProfileInput) => {
+  const getRecommendations = async (input: ProfileInput): Promise<RecommendationResult | null> => {
     setLoading(true);
     setError(null);
     try {
+      localStorage.setItem('regalaya_last_query', input.query);
       const response = await http.post<RecommendationResult>('/ai/recommendations', input);
-      setResult(response.data || response);
+      const data = response.data || response;
+      setResult(data);
+      return data;
     } catch (err: unknown) {
-      // Tratamento seguro do erro
       let errorMsg = 'Erro ao buscar recomendações. Tente novamente.';
       if (typeof err === 'object' && err !== null) {
         const errObj = err as Record<string, unknown>;
         errorMsg = typeof errObj.message === 'string' ? errObj.message : errorMsg;
       }
       setError(errorMsg);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -68,7 +86,6 @@ export function useRecommendations() {
       
       return message;
     } catch (err: unknown) {
-      // Extrair informação de erro de forma segura
       let errorMessage = 'Erro desconhecido';
       let errorStatus = 0;
       
@@ -79,11 +96,25 @@ export function useRecommendations() {
       }
       
       console.error(`Erro na geração de mensagem [${errorStatus}]:`, errorMessage);
-      
-      // Fallback message quando API falha
       return 'Parabéns por essa data tão especial! Que este presente traga muita alegria e momentos inesquecíveis.';
     } finally {
       setMsgLoading(false);
+    }
+  };
+
+  const chat = async (messages: ChatMessage[]): Promise<ChatResponse> => {
+    setChatLoading(true);
+    try {
+      const response = await http.post<ChatResponse>('/ai/chat', { messages });
+      return response.data || response;
+    } catch (err) {
+      console.error('Erro no chat:', err);
+      return { 
+        message: 'Desculpe, não consegui processar sua mensagem agora. Tente novamente em alguns instantes.',
+        suggestions: ['Tentar novamente', 'Ver produtos']
+      };
+    } finally {
+      setChatLoading(false);
     }
   };
 
@@ -91,5 +122,5 @@ export function useRecommendations() {
     console.log('Feedback:', suggestionNome, gostou);
   };
 
-  return { getRecommendations, generateMessage, submitFeedback, result, loading, msgLoading, error };
+  return { getRecommendations, generateMessage, chat, submitFeedback, result, loading, msgLoading, chatLoading, error };
 }

@@ -1,0 +1,9 @@
+{
+  "model": "qwen3.5:0.8b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Olá"
+    }
+  ]
+}

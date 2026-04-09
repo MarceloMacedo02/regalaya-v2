@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -79,5 +80,16 @@ public class CartController {
     public ResponseEntity<CartResponse> removeCoupon(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.ok(cartService.removeCoupon(userDetails.getId()));
+    }
+    @PatchMapping("/gift-message")
+    @Operation(summary = "Atualizar dedicatória", description = "Atualiza a dedicatória global do carrinho")
+    public ResponseEntity<CartResponse> updateGiftMessage(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody Map<String, String> body) {
+        String message = body.get("giftMessage");
+        String sender = body.get("senderName");
+        String recipient = body.get("recipientName");
+        String context = body.get("giftContext");
+        return ResponseEntity.ok(cartService.updateGiftInfo(userDetails.getId(), message, sender, recipient, context));
     }
 }

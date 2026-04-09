@@ -63,6 +63,45 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     """)
     List<Product> findByKeyword(@Param("term") String term, Pageable pageable);
 
+    // Keyword search with stock filter - for AI-assisted recommendations
+    @Query("""
+        SELECT p FROM Product p 
+        LEFT JOIN p.category c
+        WHERE p.isActive = true AND p.stock > 0 AND (
+            LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%')) OR 
+            LOWER(p.description) LIKE LOWER(CONCAT('%', :term, '%')) OR 
+            LOWER(p.shortDescription) LIKE LOWER(CONCAT('%', :term, '%')) OR 
+            LOWER(p.tags) LIKE LOWER(CONCAT('%', :term, '%')) OR
+            LOWER(c.name) LIKE LOWER(CONCAT('%', :term, '%'))
+        )
+    """)
+    List<Product> findByKeywordWithStock(@Param("term") String term, Pageable pageable);
+
+    // Busca DIRETA por tags com estoque — sem IA, para o chat
+    @Query(value = """
+        SELECT * FROM products 
+        WHERE is_active = true 
+          AND COALESCE(stock, 0) >= 1
+          AND (
+            LOWER(tags) LIKE LOWER(CONCAT('%', :tag, '%')) OR
+            LOWER(name) LIKE LOWER(CONCAT('%', :tag, '%'))
+          )
+        ORDER BY stock DESC
+        LIMIT :maxResults
+        """, nativeQuery = true)
+    List<Product> findByTagWithStock(@Param("tag") String tag, @Param("maxResults") int maxResults);
+
+    // Busca por relacionamento Tag entity (ManyToMany) com stock >= 1
+    @Query("""
+        SELECT DISTINCT p FROM Product p 
+        JOIN p.tagSet t
+        WHERE p.isActive = true AND p.stock >= 1
+          AND (LOWER(t.name) LIKE LOWER(CONCAT('%', :term, '%'))
+            OR LOWER(t.description) LIKE LOWER(CONCAT('%', :term, '%')))
+        ORDER BY p.stock DESC
+    """)
+    List<Product> findByTagNameWithStock(@Param("term") String term);
+
     @Query(value = """
         SELECT p.id, p.name, p.sku, SUM(oi.quantity) as units_sold, SUM(oi.total) as revenue
         FROM order_items oi

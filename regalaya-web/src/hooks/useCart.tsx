@@ -13,9 +13,17 @@ interface CartContextType {
   subtotal: number
   couponCode: string | null
   couponDiscount: number
+  giftMessage: string | null
+  senderName: string | null
+  recipientName: string | null
+  giftContext: string | null
+  isCartOpen: boolean
+  setIsCartOpen: (open: boolean) => void
   addItem: (item: { productId: string; name: string; price: number; quantity: number; image?: string }) => Promise<void>
   removeItem: (productId: string) => Promise<void>
   updateQuantity: (productId: string, quantity: number) => Promise<void>
+  updateGiftMessage: (message: string) => Promise<void>
+  updateGiftInfo: (message: string | null, sender?: string | null, recipient?: string | null, context?: string | null) => Promise<void>
   clearCart: () => Promise<void>
   applyCoupon: (code: string) => Promise<void>
   removeCoupon: () => Promise<void>
@@ -37,6 +45,7 @@ function localCartToItems(local: { productId: string; name: string; price: numbe
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
@@ -78,10 +87,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const addItem = async (item: { productId: string; name: string; price: number; quantity: number; image?: string }) => {
+  const addItem = async (item: { productId: string; name: string; price: number; quantity: number; image?: string; giftMessage?: string }) => {
     if (isAuthenticated) {
       try {
-        const updated = await cartService.addToCart({ productId: item.productId, quantity: item.quantity })
+        const updated = await cartService.addToCart({ productId: item.productId, quantity: item.quantity, giftMessage: item.giftMessage })
         setCart(updated)
         return
       } catch {
@@ -108,6 +117,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           unitPrice: item.price,
           quantity: item.quantity,
           subtotal: item.price * item.quantity,
+          giftMessage: item.giftMessage
         }]
       }
       const subtotal = newItems.reduce((sum, i) => sum + i.subtotal, 0)
@@ -190,11 +200,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  const updateGiftMessage = async (giftMessage: string | null) => {
+    await updateGiftInfo(giftMessage, cart?.senderName, cart?.recipientName, cart?.giftContext)
+  }
+
+  const updateGiftInfo = async (giftMessage: string | null, senderName?: string | null, recipientName?: string | null, giftContext?: string | null) => {
+    if (isAuthenticated) {
+      try {
+        const updated = await cartService.updateGiftMessage(giftMessage, senderName, recipientName, giftContext)
+        setCart(updated)
+        return
+      } catch {}
+    }
+
+    setCart(prev => {
+      if (!prev) return prev
+      return { ...prev, giftMessage, senderName: senderName || null, recipientName: recipientName || null, giftContext: giftContext || null }
+    })
+  }
+
   const clearCart = async () => {
     if (isAuthenticated) {
       try {
         await cartService.clearCart()
-        setCart({ userId: cart?.userId || "", items: [], itemCount: 0, totalQuantity: 0, subtotal: 0, shipping: 0, discount: 0, total: 0, couponCode: null, couponDiscount: 0 })
+        setCart({ userId: cart?.userId || "", items: [], itemCount: 0, totalQuantity: 0, subtotal: 0, shipping: 0, discount: 0, total: 0, couponCode: null, couponDiscount: 0, giftMessage: null, senderName: null, recipientName: null, giftContext: null })
         return
       } catch {}
     }
@@ -225,11 +254,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const subtotal = cart?.subtotal || 0
   const couponCode = cart?.couponCode || null
   const couponDiscount = cart?.couponDiscount || 0
+  const giftMessage = cart?.giftMessage || null
+  const senderName = cart?.senderName || null
+  const recipientName = cart?.recipientName || null
+  const giftContext = cart?.giftContext || null
 
   return (
     <CartContext.Provider value={{
-      items, isLoading, cart, itemCount, subtotal, couponCode, couponDiscount,
-      addItem, removeItem, updateQuantity, clearCart, applyCoupon, removeCoupon, refreshCart,
+      items, isLoading, cart, itemCount, subtotal, couponCode, couponDiscount, giftMessage, senderName, recipientName, giftContext,
+      isCartOpen, setIsCartOpen,
+      addItem, removeItem, updateQuantity, updateGiftMessage, updateGiftInfo, clearCart, applyCoupon, removeCoupon, refreshCart,
     }}>
       {children}
     </CartContext.Provider>

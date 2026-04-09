@@ -27,6 +27,7 @@ type ProductCardProduct = {
 import { Heart, ShoppingCart, Images, ChevronLeft, ChevronRight } from "lucide-react"
 import { useWishlistContext } from "@/contexts/wishlist-context"
 import { toast } from "@/components/ui/use-toast"
+import { useCart } from "@/hooks/useCart"
 
 interface ProductCardProps {
   product: ProductCardProduct
@@ -44,8 +45,10 @@ export function ProductCard({
   showImageCount = true,
 }: ProductCardProps) {
   const { isInWishlist, toggleWishlist } = useWishlistContext()
+  const { addItem } = useCart()
   const [hoveredImageIndex, setHoveredImageIndex] = useState(-1)
   const [isHovering, setIsHovering] = useState(false)
+  const [isAdding, setIsAdding] = useState(false)
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const cycleIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -245,19 +248,39 @@ export function ProductCard({
             <Button
               size="sm"
               className="w-full bg-white text-zinc-900 hover:bg-zinc-100"
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                // Add to cart logic here
-                toast({
-                  title: "Adicionado ao carrinho!",
-                  description: `${product.name} foi adicionado ao carrinho.`,
-                  duration: 2000,
-                })
+                try {
+                  await addItem({
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    image: product.images[0]
+                  })
+                  setIsAdding(true)
+                  setTimeout(() => setIsAdding(false), 2000)
+                  toast({
+                    title: "Adicionado ao carrinho!",
+                    description: `${product.name} foi adicionado ao carrinho.`,
+                    duration: 2000,
+                  })
+                } catch (err) {
+                  toast({
+                    title: "Erro ao adicionar",
+                    description: "Não foi possível adicionar o produto ao carrinho.",
+                    variant: "destructive"
+                  })
+                }
               }}
             >
-              <ShoppingCart className="h-4 w-4 mr-2" />
-              Adicionar
+              {isAdding ? "Adicionado ✅" : (
+                <>
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Adicionar
+                </>
+              )}
             </Button>
           </div>
         </div>

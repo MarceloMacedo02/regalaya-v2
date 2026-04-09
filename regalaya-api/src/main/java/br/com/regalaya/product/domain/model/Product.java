@@ -6,12 +6,14 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "products")
 @Getter
 @Setter
-@ToString(exclude = "category")
+@ToString(exclude = {"category", "tags"})
 @EqualsAndHashCode(of = "id", callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -50,10 +52,26 @@ public class Product extends BaseEntity {
     @Column(length = 2000)
     private String images;
 
+    /** @deprecated Use {@link #tags} (ManyToMany) instead */
     @Column(length = 1000)
     private String tags;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "product_tags",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    @Builder.Default
+    private Set<Tag> tagSet = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    /** Helper: string com todos os nomes das tags separados por vírgula */
+    public String getTagNames() {
+        if (tagSet == null || tagSet.isEmpty()) return tags != null ? tags : "";
+        return tagSet.stream().map(Tag::getName).sorted().reduce("", (a, b) -> a.isEmpty() ? b : a + ", " + b);
+    }
 }

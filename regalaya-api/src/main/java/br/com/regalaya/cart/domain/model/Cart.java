@@ -36,6 +36,18 @@ public class Cart extends BaseEntity {
     @Builder.Default
     private BigDecimal couponDiscount = BigDecimal.ZERO;
 
+    @Column(name = "gift_message", length = 1000)
+    private String giftMessage;
+    
+    @Column(name = "sender_name", length = 100)
+    private String senderName;
+    
+    @Column(name = "recipient_name", length = 100)
+    private String recipientName;
+    
+    @Column(name = "gift_context", length = 1000)
+    private String giftContext;
+
     public void addItem(CartItem item) {
         items.add(item);
         item.setCart(this);

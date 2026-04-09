@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 public interface PaymentMapper {
 
     @Mapping(target = "paymentIntentId", source = "providerPaymentId")
+    @Mapping(target = "paymentMethod", source = "paymentMethodType")
     PaymentIntentResponse toIntentResponse(Payment payment);
 
     @Mapping(target = "paymentId", source = "id")

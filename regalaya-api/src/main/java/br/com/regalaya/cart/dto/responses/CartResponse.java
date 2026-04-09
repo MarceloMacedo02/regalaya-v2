@@ -14,5 +14,9 @@ public record CartResponse(
     BigDecimal discount,
     BigDecimal total,
     String couponCode,
-    BigDecimal couponDiscount
+    BigDecimal couponDiscount,
+    String giftMessage,
+    String senderName,
+    String recipientName,
+    String giftContext
 ) {}
