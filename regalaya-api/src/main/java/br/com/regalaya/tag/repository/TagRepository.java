@@ -1,6 +1,6 @@
-package br.com.regalaya.product.repository;
+package br.com.regalaya.tag.repository;
 
-import br.com.regalaya.product.domain.model.Tag;
+import br.com.regalaya.tag.domain.model.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,7 +17,6 @@ public interface TagRepository extends JpaRepository<Tag, UUID> {
 
     boolean existsByName(String name);
 
-    /** Busca tags que contenham o termo (para autocomplete) */
     @Query("SELECT t FROM Tag t WHERE LOWER(t.name) LIKE LOWER(CONCAT('%', :term, '%'))")
     List<Tag> findByNameContaining(@Param("term") String term);
 }
