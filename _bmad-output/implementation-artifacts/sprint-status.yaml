@@ -25,7 +25,7 @@
 #   - done: Retrospective has been completed
 
 generated: 2026-04-07T00:00:00.000Z
-last_updated: 2026-04-08T22:00:00.000Z
+last_updated: 2026-04-10T00:00:00.000Z
 project: regalaya01
 project_key: NOKEY
 tracking_system: file-system
@@ -109,33 +109,33 @@ development_status:
   # ÉPICO 10: Curadoria de Presentes com IA
   epic-10: in-progress
   10-1-recomendacao-perfil: in-progress
-  10-2-geracao-mensagem-personalizada: ready-for-dev
-  10-3-rag-retrieval-augmented: ready-for-dev
-  10-4-limite-uso-ia: ready-for-dev
+  10-2-geracao-mensagem-personalizada: review
+  10-3-rag-retrieval-augmented: review
+  10-4-limite-uso-ia: review
   epic-10-retrospective: optional
 
   # ÉPICO 11: Integração WhatsApp Bot
   epic-11: in-progress
-  11-1-menu-inicial-bot: ready-for-dev
-  11-2-cadastro-pessoa-whatsapp: ready-for-dev
-  11-3-sugestoes-whatsapp: ready-for-dev
-  11-4-agendamento-mensagem-whatsapp: ready-for-dev
+  11-1-menu-inicial-bot: review
+  11-2-cadastro-pessoa-whatsapp: review
+  11-3-sugestoes-whatsapp: review
+  11-4-agendamento-mensagem-whatsapp: review
   epic-11-retrospective: optional
 
   # ÉPICO 12: Dashboard e Analytics (Admin)
-  epic-12: backlog
-  12-1-dashboard-principal-admin: backlog
-  12-2-grafico-vendas: backlog
-  12-3-produtos-mais-vendidos: backlog
-  12-4-funil-vendas: backlog
-  12-5-cohort-analysis: backlog
+  epic-12: in-progress
+  12-1-dashboard-principal-admin: review
+  12-2-grafico-vendas: review
+  12-3-produtos-mais-vendidos: review
+  12-4-funil-vendas: review
+  12-5-cohort-analysis: review
   epic-12-retrospective: optional
 
   # ÉPICO 13: Conteúdo e Configurações (Admin)
-  epic-13: backlog
-  13-1-gestao-banners: backlog
-  13-2-paginas-institucionais: backlog
-  13-3-configuracoes-loja: backlog
+  epic-13: in-progress
+  13-1-gestao-banners: review
+  13-2-paginas-institucionais: review
+  13-3-configuracoes-loja: review
   epic-13-retrospective: optional
 
   # ÉPICO 14: Sistema de Estoque

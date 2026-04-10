@@ -147,6 +147,25 @@ app:
       timeout: ${OPENAI_TIMEOUT:60s}
       max-retries: ${OPENAI_MAX_RETRIES:3}
 
+  # WhatsApp Configuration
+  whatsapp:
+    api-url: ${WHATSAPP_API_URL:https://graph.facebook.com/v21.0}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    verify-token: ${WHATSAPP_VERIFY_TOKEN:}
+    app-secret: ${WHATSAPP_APP_SECRET:}
+    rate-limit-per-hour: ${WHATSAPP_RATE_LIMIT:1000}
+    max-retries: ${WHATSAPP_MAX_RETRIES:3}
+    connection-timeout-ms: ${WHATSAPP_CONNECTION_TIMEOUT:5000}
+    read-timeout-ms: ${WHATSAPP_READ_TIMEOUT:10000}
+
+  # Evolution API Integration
+  evolution-api:
+    base-url: ${EVOLUTION_API_URL:http://localhost:8083}
+    api-key: ${EVOLUTION_API_KEY:}
+    instance-name: ${EVOLUTION_API_INSTANCE:regalaya}
+    enabled: ${EVOLUTION_API_ENABLED:false}
+
 # AWS / LocalStack Configuration
 cloud:
   aws:
@@ -177,7 +196,6 @@ resilience4j:
         recordExceptions:
           - java.io.IOException
           - java.util.concurrent.TimeoutException
-          - br.com.regalaya.payment.exception.PaymentProcessingException
   retry:
     instances:
       paymentProvider:
@@ -188,4 +206,3 @@ resilience4j:
         retryExceptions:
           - java.io.IOException
           - java.util.concurrent.TimeoutException
-          - br.com.regalaya.payment.exception.PaymentProcessingException

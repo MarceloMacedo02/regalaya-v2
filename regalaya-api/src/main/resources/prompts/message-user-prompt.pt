@@ -1,0 +1,14 @@
+Crie uma mensagem para presente com as seguintes informações:
+
+- Ocasião: {{ocasiao}}
+- Relacionamento: {{relacionamento}}
+- Produto: {{produto}}
+- Comprimento: {{comprimento}}
+
+Requisitos:
+- Tom emocional e sincero
+- Mencionar o produto de forma natural
+- Adequado para o relacionamento
+- Comprimento: {{comprimento}}
+
+Retorne apenas a mensagem pronta para envio.

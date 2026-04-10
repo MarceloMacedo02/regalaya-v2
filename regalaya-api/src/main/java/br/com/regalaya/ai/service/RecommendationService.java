@@ -1,9 +1,6 @@
 package br.com.regalaya.ai.service;
 
 import br.com.regalaya.ai.domain.model.Recommendation;
-import br.com.regalaya.ai.model.ChatRequest;
-import br.com.regalaya.ai.model.ChatResponse;
-import br.com.regalaya.ai.model.ChatMessageDto;
 import br.com.regalaya.ai.model.MessageRequest;
 import br.com.regalaya.ai.model.MessageResponse;
 import br.com.regalaya.ai.model.ProfileInput;
@@ -29,11 +26,9 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -54,66 +49,35 @@ public class RecommendationService {
     private final ObjectMapper objectMapper;
     private final RecommendationRepository recommendationRepository;
     private final ProductRepository productRepository;
-    private final br.com.regalaya.product.mapper.ProductMapper productMapper;
     private final RestTemplate restTemplate = new RestTemplate();
 
     public RecommendationResult recommend(UUID userId, ProfileInput input) {
         try {
-            log.info("Processando recomendação via Tags: {}", input.getQuery());
+            log.info("Processando pedido: {}", input.getQuery());
 
-            // 1. Extrair palavras-chave da query (tags relevantes)
-            List<String> keywords = extractKeywords(input.getQuery());
-            log.info("Tags extraídas: {}", keywords);
+            // 1. Buscar TODOS os IDs de produtos ativos com estoque > 0 (ótimo para a IA filtrar)
+            List<UUID> allProductIds = productRepository.findAllActiveWithStockIds();
+            log.info("Total de produtos ativos com estoque: {}", allProductIds.size());
 
-            // 2. Busca por Tag entity (ManyToMany JPQL) — stock >= 1
-            List<Product> candidateProducts = new ArrayList<>();
-            for (String keyword : keywords) {
-                // Busca pela tabela tags (relacionamento)
-                List<Product> byTag = productRepository.findByTagNameWithStock(keyword);
-                // Também busca por nome/tags legado para garantir cobertura
-                List<Product> byNative = productRepository.findByTagWithStock(keyword, 10);
-                for (Product p : byTag) {
-                    if (candidateProducts.stream().noneMatch(cp -> cp.getId().equals(p.getId()))) {
-                        candidateProducts.add(p);
-                    }
-                }
-                for (Product p : byNative) {
-                    if (candidateProducts.stream().noneMatch(cp -> cp.getId().equals(p.getId()))) {
-                        candidateProducts.add(p);
-                    }
-                }
-            }
-            log.info("Produtos encontrados por tag: {}", candidateProducts.size());
-
-            // 3. Fallback: se tags retornaram poucos, complementa com qualquer produto com estoque
-            if (candidateProducts.size() < 5) {
-                List<Product> allActive = productRepository.findAllActiveWithStock();
-                for (Product p : allActive) {
-                    if (candidateProducts.stream().noneMatch(cp -> cp.getId().equals(p.getId()))) {
-                        candidateProducts.add(p);
-                    }
-                    if (candidateProducts.size() >= 15) break;
-                }
-                log.info("Fallback aplicado. Total candidatos: {}", candidateProducts.size());
-            }
-
-            if (candidateProducts.isEmpty()) {
+            // Se não tiver produtos, retorna fallback
+            if (allProductIds.isEmpty()) {
                 log.warn("Nenhum produto ativo com estoque encontrado.");
                 return getFallbackRecommendations();
             }
 
-            // 4. Montar inventário para IA curar e escrever justificativas (max 15)
+            // 2. Buscar detalhes mínimos dos produtos (ID, Name, Description) - só os que têm estoque
+            List<Product> productsWithDetails = productRepository.findAllActiveWithStock();
+
+            // 3. Montar inventory reduzido para IA - LIMITE DE 10 ITENS PARA TESTE DE CONTEXTO
             StringBuilder inventoryBuilder = new StringBuilder();
             int count = 0;
-            for (Product p : candidateProducts) {
-                if (count++ >= 15) break;
+            for (Product p : productsWithDetails) {
+                if (count++ >= 10) break; 
                 String desc = p.getShortDescription() != null ? p.getShortDescription() :
                              p.getDescription() != null ? p.getDescription() : "";
-                String tags = p.getTags() != null ? " [tags: " + p.getTags() + "]" : "";
                 inventoryBuilder.append(p.getId().toString())
                     .append(": ")
                     .append(p.getName())
-                    .append(tags)
                     .append(" - ")
                     .append(desc.substring(0, Math.min(desc.length(), 100)))
                     .append("\n");
@@ -251,128 +215,30 @@ public class RecommendationService {
 
     public MessageResponse generateMessage(MessageRequest request) {
         try {
-            String systemPrompt = "Você é um Especialista em Curadoria Emocional e Alta Literatura da Regalaya. " +
-                "Sua missão é escrever dedicatórias que combinam sofisticação e elegância absoluta. " +
-                "REGRAS DE OURO:\n" +
-                "1. ALINHAMENTO: Use o contexto fornecido (profissão, hobbies, etc).\n" +
-                "2. FORMATO RESTRITO: Comece com 'Para: [Nome]' e termine com 'De: [Nome]'.\n" +
-                "3. PROIBIÇÕES: Não use tags markdown, não explique o que fez, não adicione preâmbulos como 'Aqui está sua mensagem'.\n" +
-                "4. IDIOMA: Português do Brasil impecável.\n" +
-                "5. SAÍDA: Retorne EXCLUSIVAMENTE o texto da dedicatória.";
-            
-            String userPrompt = String.format(
-                "### DADOS DO PEDIDO:\n" +
-                "CONTEXTO: %s\n" +
-                "RELACIONAMENTO: %s\n" +
-                "OCASIÃO: %s\n" +
-                "PRODUTOS: %s\n" +
-                "TOM: %s\n\n" +
-                "### EXEMPLO DE FORMATO ESPERADO:\n" +
-                "Para: Ana\n" +
-                "Que o brilho deste champagne ilumine sua nova jornada como arquiteta. Sua visão transforma espaços em poesia.\n" +
-                "De: Carlos\n\n" +
-                "### TAREFA:\n" +
-                "Escreva agora a dedicatória para os dados acima. NÃO adicione nada além do texto final.",
-                request.getContexto(),
-                request.getRelacionamento(),
-                request.getOcasiao(),
-                request.getProduto(),
-                request.getTom() != null ? request.getTom() : "emocional"
-            );
+            // Carregar prompt templates
+            String systemPromptTemplate = loadTemplate("classpath:prompts/message-system-prompt.pt");
+            String userPromptTemplate = loadTemplate("classpath:prompts/message-user-prompt.pt");
+
+            // Determinar instruções de comprimento
+            String comprimentoInstrucao = switch (request.getComprimento() != null ? request.getComprimento() : "medio") {
+                case "curto" -> "Curto: 50-100 palavras, direto e impactante.";
+                case "longo" -> "Longo: 200-400 palavras, detalhado e emocional.";
+                default -> "Médio: 100-200 palavras, equilibrado e significativo.";
+            };
+
+            String systemPrompt = systemPromptTemplate.trim();
+            String userPrompt = userPromptTemplate
+                    .replace("{{ocasiao}}", request.getOcasiao())
+                    .replace("{{relacionamento}}", request.getRelacionamento())
+                    .replace("{{produto}}", request.getProduto() != null ? request.getProduto() : "")
+                    .replace("{{comprimento}}", comprimentoInstrucao);
 
             String mensagem = callAiProvider(systemPrompt, userPrompt);
             return MessageResponse.builder().mensagem(mensagem.trim()).build();
         } catch (Exception e) {
-            log.error("Erro ao gerar mensagem com IA: {}. Usando fallback elegante.", e.getMessage());
-            String simpleMessage = String.format(
-                "Para: %s\n\nQue este presente cure instantes de alegria e celebre a beleza da nossa conexão. Cada item foi escolhido pensando na sofisticação que você merece.\n\nCom carinho, %s",
-                request.getContexto().contains("Para:") ? "Você" : "Alguém Especial",
-                request.getContexto().contains("De:") ? "" : "Equipe Regalaya"
-            );
-            return MessageResponse.builder().mensagem(simpleMessage).build();
+            log.error("Erro ao gerar mensagem com IA", e);
+            throw new RuntimeException("Falha ao gerar mensagem com IA: " + e.getMessage(), e);
         }
-    }
-
-    public ChatResponse chat(ChatRequest request) {
-        try {
-            String systemPrompt = "Você é o Concierge Regalaya, um assistente de presentes de alto padrão, educado, prestativo e sofisticado. " +
-                "Sua missão é ajudar o cliente a escolher o presente perfeito, tirando dúvidas sobre produtos, ocasiões e etiqueta de presentes. " +
-                "REGRAS:\n" +
-                "1. TOM: Elegante, caloroso e profissional.\n" +
-                "2. FOCO: Presentes, cestas premium, vinhos, joias e bem-estar.\n" +
-                "3. SUGESTÕES: Sempre que o cliente pedir ideias, recomende categorias que temos (VinhosPremium, ChocolatesArtesanais, BemEstar, Joias).\n" +
-                "4. CONTEXTO: Responda de forma concisa e útil.";
-
-            List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(Map.of("role", "system", "content", systemPrompt));
-            
-            for (ChatMessageDto msg : request.messages()) {
-                messages.add(Map.of("role", msg.role(), "content", msg.content()));
-            }
-
-            // Chamada direta para o provedor com o histórico
-            String aiResponse = callAiProviderWithHistory(messages);
-            
-            return new ChatResponse(aiResponse, List.of("Ideias de presente", "Como funciona a entrega?", "Kits de vinho"), null);
-        } catch (Exception e) {
-            log.error("Erro no chat com IA: {}", e.getMessage());
-            return new ChatResponse("Desculpe, estou com uma instabilidade momentânea. Posso te ajudar com algo específico sobre nossos presentes?", List.of("Ver produtos"), null);
-        }
-    }
-
-    private String callAiProviderWithHistory(List<Map<String, String>> chatMessages) {
-        long startTime = System.currentTimeMillis();
-        log.info("Iniciando chamada de Chat IA: Provedor={}, Modelo={}", aiBaseUrl, aiModel);
-        
-        org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(300000); 
-        factory.setReadTimeout(300000);    
-        
-        RestTemplate restTemplate = new RestTemplate(factory);
-        restTemplate.getMessageConverters()
-            .add(0, new org.springframework.http.converter.StringHttpMessageConverter(java.nio.charset.StandardCharsets.UTF_8));
-        
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(aiApiKey);
-        
-        Map<String, Object> body = new HashMap<>();
-        body.put("model", aiModel);
-        body.put("messages", chatMessages);
-        body.put("temperature", 0.7); 
-        body.put("max_tokens", 1000); 
-        body.put("stream", false);
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-        
-        try {
-            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
-                aiBaseUrl + (aiBaseUrl.endsWith("/") ? "chat/completions" : "/chat/completions"),
-                entity,
-                Map.class
-            );
-
-            Map response = responseEntity.getBody();
-            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-            String content = (String) message.get("content");
-            
-            // Limpeza básica se houver reasoning
-            String reasoning = (String) message.get("reasoning");
-            if ((content == null || content.trim().isEmpty()) && reasoning != null) content = reasoning;
-
-            return cleanAiChatResponse(content);
-        } catch (Exception ex) {
-            log.error("Falha na chamada de Chat: " + ex.getMessage());
-            throw new RuntimeException("AI Chat failure");
-        }
-    }
-    
-    private String cleanAiChatResponse(String content) {
-        if (content == null) return "";
-        String cleaned = content.replaceAll("(?s)<thought>.*?</thought>", "");
-        cleaned = cleaned.replaceAll("(?s)<reasoning>.*?</reasoning>", "");
-        return cleaned.trim();
     }
 
     private String callAiProvider(String systemPrompt, String userMessage) {
@@ -383,17 +249,13 @@ public class RecommendationService {
         factory.setConnectTimeout(300000); // 5 minutos
         factory.setReadTimeout(300000);    // 5 minutos
         
-        log.info("Iniciando chamada de IA: Provedor={}, Modelo={}", aiBaseUrl, aiModel);
-        
         RestTemplate restTemplate = new RestTemplate(factory);
-        // Garante UTF-8 para evitar caracteres corrompidos (Mojibake)
-        restTemplate.getMessageConverters()
-            .add(0, new org.springframework.http.converter.StringHttpMessageConverter(java.nio.charset.StandardCharsets.UTF_8));
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(aiApiKey);
         
+        // Headers adaptáveis conforme o provedor
         if (aiBaseUrl.contains("openrouter.ai")) {
             headers.set("HTTP-Referer", "https://regalaya.com");
             headers.set("X-Title", "Regalaya Gift Assistant");
@@ -407,9 +269,9 @@ public class RecommendationService {
         messages.add(Map.of("role", "user", "content", userMessage));
         body.put("messages", messages);
         
-        body.put("temperature", 0.5); // Aumentado levemente para fluidez, mas mantendo controle
-        body.put("max_tokens", 1000); // Reduzido drasticamente para evitar respostas intermináveis e timeouts
-        body.put("stream", false);
+        // Parâmetros de controle
+        body.put("temperature", 0.1); // Temperatura mínima para evitar divagações
+        body.put("max_tokens", 4000); // Aumentado para suportar reasoning se houver, mas o prompt proíbe
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
         
@@ -417,7 +279,7 @@ public class RecommendationService {
             log.debug("Payload enviado: {}", objectMapper.writeValueAsString(body));
             
             ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
-                aiBaseUrl + (aiBaseUrl.endsWith("/") ? "chat/completions" : "/chat/completions"),
+                aiBaseUrl + "/chat/completions",
                 entity,
                 Map.class
             );
@@ -441,22 +303,19 @@ public class RecommendationService {
             String reasoning = (String) message.get("reasoning");
             
             // Se o content estiver vazio mas houver reasoning, tenta usar o reasoning
+            // (Comum em modelos como Kimi/DeepSeek no Ollama)
             if ((content == null || content.trim().isEmpty()) && reasoning != null && !reasoning.trim().isEmpty()) {
                 log.info("Content vazio, mas encontrou reasoning. Usando reasoning como fonte.");
                 content = reasoning;
             }
             
             if (content == null || content.trim().isEmpty()) {
-                log.error("Conteúdo da mensagem da IA veio vazio.");
-                throw new RuntimeException("AI Provider retornou conteúdo vazio.");
+                String rawBodyStr = (response != null) ? response.toString() : "NULL BODY";
+                System.err.println("CRITICAL: AI Content is empty! Raw body: " + rawBodyStr);
+                log.error("Conteúdo da mensagem da IA veio vazio. Body completo: {}", rawBodyStr);
+                throw new RuntimeException("AI Provider retornou conteúdo vazio. Body: " + rawBodyStr);
             }
-
-            content = cleanAiResponse(content);
             
-            if (content.isEmpty()) {
-                throw new RuntimeException("Conteúdo da IA ficou vazio após a limpeza.");
-            }
-
             long duration = System.currentTimeMillis() - startTime;
             log.info("Sugestão recebida da IA com sucesso em {}ms.", duration);
             return content;
@@ -464,25 +323,6 @@ public class RecommendationService {
             log.error("Falha na chamada REST para AI Provider: " + ex.getMessage(), ex);
             throw new RuntimeException("AI Provider failure", ex);
         }
-    }
-
-    private String cleanAiResponse(String content) {
-        if (content == null) return "";
-        
-        // Remove tags de pensamento comuns em modelos locais (DeepSeek, etc)
-        String cleaned = content.replaceAll("(?s)<thought>.*?</thought>", "");
-        cleaned = cleaned.replaceAll("(?s)<reasoning>.*?</reasoning>", "");
-        
-        // Remove preâmbulos chatos e JSON residual
-        cleaned = cleaned.replaceAll("(?i)^.*?Para:", "Para:");
-        
-        // Remove rastro de 'reasoning=' que modelos mal-treinados às vezes cospem
-        int reasoningIdx = cleaned.indexOf("reasoning=");
-        if (reasoningIdx != -1) {
-            cleaned = cleaned.substring(0, reasoningIdx);
-        }
-
-        return cleaned.trim();
     }
 
     private String loadTemplate(String path) throws IOException {
@@ -518,53 +358,5 @@ public class RecommendationService {
         }).toList();
 
         return RecommendationResult.builder().sugestoes(suggestions).build();
-    }
-
-    /**
-     * Busca produtos por tag/nome com estoque >= 1 — sem IA, SQL direto.
-     * Usado pelo chat para exibir cards relevantes em toda interação.
-     */
-    public List<br.com.regalaya.product.dto.responses.ProductResponse> findProductsByTag(String tag, int maxResults) {
-        // Busca pela relação Tag entity (ManyToMany) primeiro
-        List<br.com.regalaya.product.domain.model.Product> products = productRepository.findByTagNameWithStock(tag);
-        // Complementa com busca legada em tags/name se necessário
-        if (products.size() < maxResults) {
-            List<br.com.regalaya.product.domain.model.Product> native_ = productRepository.findByTagWithStock(tag, maxResults);
-            for (var p : native_) {
-                if (products.stream().noneMatch(cp -> cp.getId().equals(p.getId()))) {
-                    products.add(p);
-                }
-            }
-        }
-        return products.stream()
-            .limit(maxResults)
-            .map(productMapper::toResponse)
-            .collect(java.util.stream.Collectors.toList());
-    }
-
-    /**
-     * Extrai palavras-chave relevantes da query do usuário para busca no banco de dados.
-     * Remove stop words em português e retorna termos com 3+ caracteres.
-     */
-    private List<String> extractKeywords(String query) {
-        if (query == null || query.isBlank()) return List.of();
-
-        Set<String> stopWords = Set.of(
-            "de", "da", "do", "das", "dos", "para", "com", "sem", "por", "uma", "um",
-            "que", "em", "no", "na", "nos", "nas", "ao", "aos", "às", "quero", "busco",
-            "preciso", "gostaria", "presente", "presentes", "ideia", "ideias", "me",
-            "seu", "sua", "meu", "minha", "boa", "bom", "ótimo", "ótima", "legal",
-            "tenho", "procuro", "tipo", "algo", "algum", "ele", "ela", "eles", "elas",
-            "ser", "ter", "vai", "pra", "qua", "qual", "como", "mais", "vou", "the",
-            "and", "for", "gift", "ver", "isso", "essa", "este", "esta", "este"
-        );
-
-        return Arrays.stream(query.toLowerCase()
-                .replaceAll("[^a-záàâãéèêíìîóòôõúùûç0-9 ]", " ")
-                .split("\\s+"))
-            .filter(word -> word.length() >= 3 && !stopWords.contains(word))
-            .distinct()
-            .limit(5)
-            .collect(java.util.stream.Collectors.toList());
     }
 }

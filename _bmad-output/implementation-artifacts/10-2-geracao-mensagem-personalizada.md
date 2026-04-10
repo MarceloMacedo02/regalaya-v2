@@ -1,6 +1,6 @@
 # Story 10.2: Geração de Mensagem Personalizada
 
-Status: ready-for-dev
+Status: review
 
 > **Tech Stack**: LangChain4j (Java) + OpenAI GPT-4 | Redis | Next.js
 
